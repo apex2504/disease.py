@@ -1,11 +1,16 @@
 from distutils.core import setup
 
+with open('README.md', 'r') as f:
+  long_desc = f.read()
+
 setup(
   name = 'corona_api',
   packages = ['corona_api'],
-  version = '0.1.1',
+  version = '0.11',
   license='MIT',
   description = 'An asynchronous wrapper for the corona.lmao.ninja API written in Python.',
+  long_description= long_desc,
+  long_description_content_type = 'text/markdown',
   author = 'Rob Wainwright',
   author_email = 'wainwrightbobby@gmail.com',
   url = 'https://github.com/apex2504/python-corona-api',
@@ -14,7 +19,7 @@ setup(
           'aiohttp',
       ],
   classifiers=[
-    'Development Status :: 3 - Alpha',
+    'Development Status :: 4 - Beta',
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.5',

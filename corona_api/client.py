@@ -1,6 +1,5 @@
 from datetime import datetime
 import aiohttp
-from .utils import format_number
 from .statistics import GlobalStatistics, CountryStatistics
 
 class APIerror(Exception):
