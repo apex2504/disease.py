@@ -1,5 +1,3 @@
-from datetime import datetime
-
 def format_date(dt):
     return dt.strftime('%d %b %Y %H:%M')
 
