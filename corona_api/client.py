@@ -1,9 +1,10 @@
 from datetime import datetime
 import aiohttp
-from .statistics import GlobalStatistics, CountryStatistics
+from .statistics import GlobalStatistics, CountryStatistics, StateStatistics
 
 class APIerror(Exception):
     pass
+
 
 class Client:
     """
@@ -11,9 +12,12 @@ class Client:
     """
     def __init__(self):
         self.session = aiohttp.ClientSession()
+
         self.global_data = 'https://corona.lmao.ninja/all'
         self.all_countries = 'https://corona.lmao.ninja/countries'
         self.country_data = 'https://corona.lmao.ninja/countries/{}'
+        self.states = 'https://corona.lmao.ninja/states'
+
 
     async def all(self):
         """
@@ -63,7 +67,7 @@ class Client:
         """
         async with self.session.get(self.country_data.format(country)) as resp:
             if not resp.status == 200:
-                raise APIerror('Failed to get country data data.')
+                raise APIerror('Failed to get country data.')
 
             country_stats = await resp.json()
 
@@ -81,8 +85,42 @@ class Client:
             total_country_cases,
             total_country_deaths,
             total_country_recoveries,
-            today_cases, today_deaths,
+            today_cases,
+            today_deaths,
             total_critical,
             cases_per_million
+            )
+        
+    
+    async def get_state_info(self, state):
+        """
+        Get the stats for a specific province of a country
+        """
+        async with self.session.get(self.states) as resp:
+            if not resp.status == 200:
+                raise APIerror('Failed to get country data.')
+
+            all_states = await resp.json()
+        
+        state = state.title()
+
+        state_info = next(s for s in all_states if s["state"] == state)
+
+        state_name = state_info.get("country", "Null")
+        total_state_cases = state_info.get("cases", 0)
+        total_state_deaths = state_info.get("deaths", 0)
+        total_state_recoveries = state_info.get("recovered", 0)
+        today_cases = state_info.get("todayCases", 0)
+        today_deaths = state_info.get("todayDeaths", 0)
+        active = state_info.get("active", 0)
+
+        return StateStatistics(
+            state_name,
+            total_state_cases,
+            total_state_deaths,
+            total_state_recoveries,
+            today_cases,
+            today_deaths,
+            active
             )
         

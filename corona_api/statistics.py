@@ -19,3 +19,14 @@ class CountryStatistics:
         self.today_deaths = today_deaths
         self.critical = critical
         self.cases_per_million = cases_per_million
+
+
+class StateStatistics:
+    def __init__(self, name, cases, deaths, recoveries, today_cases, today_deaths, active):
+        self.name = name
+        self.cases = cases
+        self.deaths = deaths
+        self.recoveries = recoveries
+        self.today_cases = today_cases
+        self.today_deaths = today_deaths
+        self.active = active
