@@ -46,7 +46,8 @@ class Client:
             today_deaths += c["todayDeaths"] if c["todayDeaths"] else 0
             total_critical += c["critical"] if c["critical"] else 0
 
-        return GlobalStatistics(cases,
+        return GlobalStatistics(
+            cases,
             deaths,
             recoveries,
             today_cases,
@@ -75,7 +76,8 @@ class Client:
         total_critical = country_stats.get("critical", 0)
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
         
-        return CountryStatistics(country_name,
+        return CountryStatistics(
+            country_name,
             total_country_cases,
             total_country_deaths,
             total_country_recoveries,
