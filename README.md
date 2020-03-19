@@ -16,4 +16,4 @@ Get support for this over on [Discord](https://takagisan.xyz/support).
  
 # Examples
 ### Discord bot
-There is an example cog for your Discord bot [here](/examples/discord_cog.py).
+There is an example cog for your Discord bot [here](https://github.com/apex2504/python-corona-api/blob/master/examples/discord_cog.py).
