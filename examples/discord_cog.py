@@ -18,7 +18,7 @@ class Coronavirus(commands.Cog):
         self.corona = corona_api.Client()
 
     @commands.command(name="coronavirus", aliases=["cv", "corona"])
-    async def coronavirus(self, ctx, country=None):
+    async def coronavirus(self, ctx, country=None, *, state=None):
 
         """
         Get the statistics for Coronavirus (COVID-19) for a specified country.
@@ -33,6 +33,13 @@ class Coronavirus(commands.Cog):
         if not country:
             data = await self.corona.all()
 
+        elif (country.lower() == "us" or country.lower() == "usa"):
+            if state:
+                data = await self.corona.get_state_info(state)
+                
+            else:
+                data = await self.corona.get_country_data(country)
+
         else:
             data = await self.corona.get_country_data(country)
 
@@ -44,14 +51,20 @@ class Coronavirus(commands.Cog):
         embed.add_field(name="Total deaths", value = corona_api.format_number(data.deaths))
         embed.add_field(name="Deaths today", value = corona_api.format_number(data.today_deaths))
         embed.add_field(name="Total recoveries", value = corona_api.format_number(data.recoveries))
-        embed.add_field(name="Total critical cases", value = corona_api.format_number(data.critical))
 
-        if not country:
+        if not isinstance(data, corona_api.StateStatistics):
+            embed.add_field(name="Total critical cases", value = corona_api.format_number(data.critical))
+
+        if isinstance(data, corona_api.GlobalStatistics):
             embed.add_field(name="Last updated", value = corona_api.format_date(data.updated))
 
-        else:
+        elif isinstance(data, corona_api.CountryStatistics):
             embed.add_field(name="Cases per million people", value = corona_api.format_number(data.cases_per_million))
-            embed.description = "**Country: {}**".format(data.name)
+            embed.description = f"**Country: {data.name}**"
+
+        else:
+            embed.add_field(name="Active cases", value=corona_api.format_number(data.active))
+            embed.description = f"**State: {data.name}**"
 
         await ctx.send(embed=embed)
 
