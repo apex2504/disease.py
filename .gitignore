@@ -1,7 +1,3 @@
 make_release.bat
-dist/corona_api-0.1.3.tar.gz
-corona_api.egg-info/top_level.txt
-corona_api.egg-info/SOURCES.txt
-corona_api.egg-info/requires.txt
-corona_api.egg-info/PKG-INFO
-corona_api.egg-info/dependency_links.txt
+dist/
+corona_api.egg-info/
