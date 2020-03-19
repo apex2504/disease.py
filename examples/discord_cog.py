@@ -28,6 +28,8 @@ class Coronavirus(commands.Cog):
                 The context for the command
             country:
                 The country to get the stats for. If None, get global stats
+            state:
+                The US state to get the stats for.
         """
     
         if not country:
