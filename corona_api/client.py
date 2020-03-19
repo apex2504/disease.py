@@ -106,7 +106,7 @@ class Client:
 
         state_info = next(s for s in all_states if s["state"] == state)
 
-        state_name = state_info.get("country", "Null")
+        state_name = state_info.get("state", "Null")
         total_state_cases = state_info.get("cases", 0)
         total_state_deaths = state_info.get("deaths", 0)
         total_state_recoveries = state_info.get("recovered", 0)
