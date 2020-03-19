@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-  name = 'corona-api',
-  packages = ['corona-api'],
-  version = '0.1',
+  name = 'corona_api',
+  packages = ['corona_api'],
+  version = '0.1.1',
   license='MIT',
   description = 'An asynchronous wrapper for the corona.lmao.ninja API written in Python.',
   author = 'Rob Wainwright',
@@ -14,9 +14,7 @@ setup(
           'aiohttp',
       ],
   classifiers=[
-    'Development Status :: 4 - Alpha',
-    'Intended Audience :: Developers',
-    'Topic :: Software Development :: Build Tools',
+    'Development Status :: 3 - Alpha',
     'License :: OSI Approved :: MIT License',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.5',
