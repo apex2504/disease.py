@@ -62,11 +62,11 @@ class Coronavirus(commands.Cog):
 
         elif isinstance(data, corona_api.CountryStatistics):
             embed.add_field(name="Cases per million people", value = corona_api.format_number(data.cases_per_million))
-            embed.description = f"**Country: {data.name}**"
+            embed.description = "**Country: {}**".format(data.name)
 
         else:
             embed.add_field(name="Active cases", value=corona_api.format_number(data.active))
-            embed.description = f"**State: {data.name}**"
+            embed.description = "**State: {}**".format(data.name)
 
         await ctx.send(embed=embed)
 
