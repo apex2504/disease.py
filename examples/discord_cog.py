@@ -71,5 +71,40 @@ class Coronavirus(commands.Cog):
         await ctx.send(embed=embed)
 
 
+    @commands.command(name="coronavirushistory", aliases=["cvhistory", "cvh", "coronahistory"])
+    async def coronavirushistory(self, ctx, country):
+        
+        """
+        Get the history for Coronavirus (COVID-19) for a specified country.
+        This will display the past 10 days of data for cases, deaths and recoveries.
+
+        Params:
+            ctx:
+                The context for the command
+            country:
+                The country to get the history for.
+        """
+    
+        data = await self.corona.get_history(country)
+
+        name = data.name
+        embed = discord.Embed(name="Coronavirus history", description=f"**Country: {name}**", color=65280)
+
+        for date in data.death_history:
+            case_history_value = "{}\n**{}:** \
+                {}".format(case_history_value, date, corona_api.format_number(data.case_history['date']))
+            death_history_value = "{}\n**{}:** \
+                {}".format(death_history_value, date, corona_api.format_number(data.death_history['date']))
+            recovery_history_value = "{}\n**{}:** \
+                {}".format(recovery_history_value, date, corona_api.format_number(data.recovery_history['date']))
+
+        embed.add_field(name="Case history", value=case_history_value)
+        embed.add_field(name="Death history", value=death_history_value)
+        embed.add_field(name="Recovery history",value=recovery_history_value)
+
+        await ctx.send(embed=embed)
+
+
+
 def setup(bot):
     bot.add_cog(Coronavirus(bot))
