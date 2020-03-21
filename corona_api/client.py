@@ -1,6 +1,6 @@
 from datetime import datetime
 import aiohttp
-from .statistics import GlobalStatistics, CountryStatistics, StateStatistics
+from .statistics import GlobalStatistics, CountryStatistics, StateStatistics, CountryHistory
 
 class APIerror(Exception):
     pass
@@ -17,6 +17,7 @@ class Client:
         self.all_countries = 'https://corona.lmao.ninja/countries'
         self.country_data = 'https://corona.lmao.ninja/countries/{}'
         self.states = 'https://corona.lmao.ninja/states'
+        self.historical = 'https://corona.lmao.ninja/historical'
 
 
     async def all(self):
@@ -124,3 +125,48 @@ class Client:
             active
             )
         
+
+    async def get_history(self, country):
+        """
+        Get historical data for a specific country.
+        """
+        async with self.session.get(self.historical) as resp:
+            if not resp.status == 200:
+                raise APIerror('Failed to get historical data.')
+
+            all_historical_stats = await resp.json()
+
+        entries = []
+        case_history = {}
+        death_history = {}
+        recovery_history = {}
+
+        for i in range(len(all_historical_stats)-1):
+            if all_historical_stats[i]["country"].lower() == country.lower():
+                entries.append(all_historical_stats[i])
+                
+        name = entries[0]["country"]
+
+        for entry in entries:
+            for date in list(entry["timeline"]["cases"].keys())[-10:]:
+                if date not in case_history:
+                    case_history[date] = int(entry["timeline"]["cases"][date])
+                else:
+                    case_history[date] += int(entry["timeline"]["cases"][date])
+            
+                if date not in death_history:
+                    death_history[date] = int(entry["timeline"]["deaths"][date])
+                else:
+                    death_history[date] += int(entry["timeline"]["deaths"][date])
+
+                if date not in recovery_history:
+                    recovery_history[date] = int(entry["timeline"]["recovered"][date])
+                else:
+                    recovery_history[date] += int(entry["timeline"]["recovered"][date])
+
+        compiled_data = []
+        compiled_data.append(case_history)
+        compiled_data.append(death_history)
+        compiled_data.append(recovery_history)
+
+        return CountryHistory(name, compiled_data)

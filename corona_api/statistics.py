@@ -30,3 +30,11 @@ class StateStatistics:
         self.today_cases = today_cases
         self.today_deaths = today_deaths
         self.active = active
+
+
+class CountryHistory:
+    def __init__(self, name, dicts):
+        self.name = name
+        self.case_history = dicts[0]
+        self.death_history = dicts[1]
+        self.recovery_history = dicts[2]
