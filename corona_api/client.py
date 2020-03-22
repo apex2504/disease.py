@@ -159,9 +159,8 @@ class Client:
         When sorted alphabetically, data is returned Z-A rather than A-Z.
         If the user wishes to reverse it, they are able to use list.reverse()
         """
-        sort = sort.lower()
-        if sort != "cases" or sort != "deaths" or sort != "recovered" or sort != "alphabetical" or sort != "country"\
-        or sort != "todayCases" or sort != "todayDeaths" or sort != "casesPerOneMillion":
+        if sort != "cases" and sort != "deaths" and sort != "recovered" and sort != "alphabetical" and sort != "country"\
+        and sort != "todayCases" and sort != "todayDeaths" and sort != "casesPerOneMillion":
             raise APIerror('Invalid sort parameter')
         
         if sort == "alphabetical":
