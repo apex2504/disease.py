@@ -88,7 +88,8 @@ class Coronavirus(commands.Cog):
         data = await self.corona.get_history(country)
 
         name = data.name
-        embed = discord.Embed(name="Coronavirus history", description=f"**Country: {name}**", color=65280)
+        embed = discord.Embed(title="Coronavirus history", description=f"**Country: {name}**", color=65280)
+        embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
 
         last_fortnight = list(data.death_history.keys())[-14:]
         case_history_value = ''
@@ -98,17 +99,17 @@ class Coronavirus(commands.Cog):
         for date in last_fortnight:
             case_history_value = "{}\n**{}:** \
                 {}".format(case_history_value, date,
-                corona_api.format_number(data.case_history['date']) if data.case_history['date'] else 'Unknown')
+                corona_api.format_number(data.case_history[date]) if data.case_history[date] else 'Unknown')
             death_history_value = "{}\n**{}:** \
                 {}".format(death_history_value,
-                date, corona_api.format_number(data.death_history['date']) if data.death_history['date'] else 'Unknown')
+                date, corona_api.format_number(data.death_history[date]) if data.death_history[date] else 'Unknown')
             recovery_history_value = "{}\n**{}:** \
                 {}".format(recovery_history_value, date,
-                corona_api.format_number(data.recovery_history['date']) if data.recovery_history['date'] else 'Unknown')
+                corona_api.format_number(data.recovery_history[date]) if data.recovery_history[date] else 'Unknown')
 
-        embed.add_field(name="Case history", value=case_history_value)
-        embed.add_field(name="Death history", value=death_history_value)
-        embed.add_field(name="Recovery history",value=recovery_history_value)
+        embed.add_field(name="Number of cases", value=case_history_value)
+        embed.add_field(name="Number of deaths", value=death_history_value)
+        embed.add_field(name="Number of recoveries",value=recovery_history_value)
 
         await ctx.send(embed=embed)
 
