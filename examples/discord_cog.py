@@ -91,6 +91,9 @@ class Coronavirus(commands.Cog):
         embed = discord.Embed(name="Coronavirus history", description=f"**Country: {name}**", color=65280)
 
         last_fortnight = list(data.death_history.keys())[-14:]
+        case_history_value = ''
+        death_history_value = ''
+        recovery_history_value = ''
 
         for date in last_fortnight:
             case_history_value = "{}\n**{}:** \
