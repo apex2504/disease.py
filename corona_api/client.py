@@ -17,7 +17,7 @@ class Client:
         self.all_countries = 'https://corona.lmao.ninja/countries'
         self.country_data = 'https://corona.lmao.ninja/countries/{}'
         self.states = 'https://corona.lmao.ninja/states'
-        self.historical = 'https://corona.lmao.ninja/historical'
+        self.historical = 'https://corona.lmao.ninja/historical/{}'
 
 
     async def all(self):
@@ -130,39 +130,32 @@ class Client:
         """
         Get historical data for a specific country.
         """
-        async with self.session.get(self.historical) as resp:
+        if country.lower() == 'usa' or country.lower() == 'united states':
+            country = 'us'
+        elif country.lower() == 'uk':
+            country = 'united kingdom'
+        elif 'korea' in country.lower():
+            country = 'korea, south' #no stats for north korea
+
+        async with self.session.get(self.historical.format(country)) as resp:
             if not resp.status == 200:
                 raise APIerror('Failed to get historical data.')
 
-            all_historical_stats = await resp.json()
+            historical_stats = await resp.json()
 
-        entries = []
-        case_history = {}
-        death_history = {}
-        recovery_history = {}
-
-        for i in range(len(all_historical_stats)-1):
-            if all_historical_stats[i]["country"].lower() == country.lower():
-                entries.append(all_historical_stats[i])
+        case_history = []
+        death_history = []
+        recovery_history = []
                 
-        name = entries[0]["country"]
+        name = historical_stats["country"]
 
-        for entry in entries:
-            for date in list(entry["timeline"]["cases"].keys())[-10:]:
-                if date not in case_history:
-                    case_history[date] = int(entry["timeline"]["cases"][date])
-                else:
-                    case_history[date] += int(entry["timeline"]["cases"][date])
-            
-                if date not in death_history:
-                    death_history[date] = int(entry["timeline"]["deaths"][date])
-                else:
-                    death_history[date] += int(entry["timeline"]["deaths"][date])
+        if not historical_stats["timeline"]["cases"]:
+            raise APIerror('Couldn\'t get stats for given country')
 
-                if date not in recovery_history:
-                    recovery_history[date] = int(entry["timeline"]["recovered"][date])
-                else:
-                    recovery_history[date] += int(entry["timeline"]["recovered"][date])
+        for date in list(historical_stats["timeline"]["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
+            case_history[date] = historical_stats["timeline"]["cases"][date]
+            death_history[date] = historical_stats["timeline"]["deaths"][date]
+            recovery_history[date] = historical_stats["timeline"]["recovered"][date]
 
         compiled_data = []
         compiled_data.append(case_history)

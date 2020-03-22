@@ -90,13 +90,18 @@ class Coronavirus(commands.Cog):
         name = data.name
         embed = discord.Embed(name="Coronavirus history", description=f"**Country: {name}**", color=65280)
 
-        for date in data.death_history:
+        last_fortnight = list(data.death_history.keys())[-14:]
+
+        for date in last_fortnight:
             case_history_value = "{}\n**{}:** \
-                {}".format(case_history_value, date, corona_api.format_number(data.case_history['date']))
+                {}".format(case_history_value, date,
+                corona_api.format_number(data.case_history['date']) if data.case_history['date'] else 'Unknown')
             death_history_value = "{}\n**{}:** \
-                {}".format(death_history_value, date, corona_api.format_number(data.death_history['date']))
+                {}".format(death_history_value,
+                date, corona_api.format_number(data.death_history['date']) if data.death_history['date'] else 'Unknown')
             recovery_history_value = "{}\n**{}:** \
-                {}".format(recovery_history_value, date, corona_api.format_number(data.recovery_history['date']))
+                {}".format(recovery_history_value, date,
+                corona_api.format_number(data.recovery_history['date']) if data.recovery_history['date'] else 'Unknown')
 
         embed.add_field(name="Case history", value=case_history_value)
         embed.add_field(name="Death history", value=death_history_value)
