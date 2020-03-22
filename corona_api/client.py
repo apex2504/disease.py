@@ -1,6 +1,6 @@
 from datetime import datetime
 import aiohttp
-from .statistics import GlobalStatistics, CountryStatistics, StateStatistics, CountryHistory
+from .statistics import GlobalStatistics, CountryStatistics, StateStatistics, CountryHistory, HistoryEntry
 
 class APIerror(Exception):
     pass
@@ -130,36 +130,24 @@ class Client:
         """
         Get historical data for a specific country.
         """
-        if country.lower() == 'usa' or country.lower() == 'united states':
-            country = 'us'
-        elif country.lower() == 'uk':
-            country = 'united kingdom'
-        elif 'korea' in country.lower():
-            country = 'korea, south' #no stats for north korea
-
         async with self.session.get(self.historical.format(country)) as resp:
             if not resp.status == 200:
                 raise APIerror('Failed to get historical data.')
 
             historical_stats = await resp.json()
 
-        case_history = {}
-        death_history = {}
-        recovery_history = {}
+        case_history = []
+        death_history = []
+        recovery_history = []
                 
-        name = historical_stats["country"].title()
+        name = historical_stats["country"]
 
         if not historical_stats["timeline"]["cases"]:
             raise APIerror('Couldn\'t get stats for given country')
 
         for date in list(historical_stats["timeline"]["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
-            case_history[date] = historical_stats["timeline"]["cases"][date]
-            death_history[date] = historical_stats["timeline"]["deaths"][date]
-            recovery_history[date] = historical_stats["timeline"]["recovered"][date]
+            case_history.append(HistoryEntry(date, historical_stats["timeline"]["cases"][date]))
+            death_history.append(HistoryEntry(date, historical_stats["timeline"]["deaths"][date]))
+            recovery_history.append(HistoryEntry(date, historical_stats["timeline"]["recovered"][date]))
 
-        compiled_data = []
-        compiled_data.append(case_history)
-        compiled_data.append(death_history)
-        compiled_data.append(recovery_history)
-
-        return CountryHistory(name, compiled_data)
+        return CountryHistory(name, case_history, death_history, recovery_history)

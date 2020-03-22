@@ -32,9 +32,15 @@ class StateStatistics:
         self.active = active
 
 
+class HistoryEntry:
+    def __init__(self, date, value):
+        self.date = date
+        self.value = value
+
+
 class CountryHistory:
-    def __init__(self, name, dicts):
+    def __init__(self, name, case_history, death_history, recovery_history):
         self.name = name
-        self.case_history = dicts[0]
-        self.death_history = dicts[1]
-        self.recovery_history = dicts[2]
+        self.case_history = case_history
+        self.death_history = death_history
+        self.recovery_history = recovery_history

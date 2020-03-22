@@ -72,7 +72,7 @@ class Coronavirus(commands.Cog):
 
 
     @commands.command(name="coronavirushistory", aliases=["cvhistory", "cvh", "coronahistory"])
-    async def coronavirushistory(self, ctx, country):
+    async def coronavirushistory(self, ctx, *, country):
         
         """
         Get the history for Coronavirus (COVID-19) for a specified country.
@@ -84,28 +84,37 @@ class Coronavirus(commands.Cog):
             country:
                 The country to get the history for.
         """
-    
+        if country.lower() == 'usa' or country.lower() == 'united states': #corrections
+            country = 'us'
+        elif country.lower() == 'uk':
+            country = 'united kingdom'
+        elif 'korea' in country.lower():
+            country = 'korea, south' #no stats for north korea
+
         data = await self.corona.get_history(country)
 
-        name = data.name
+        name = data.name.title()
         embed = discord.Embed(title="Coronavirus history", description=f"**Country: {name}**", color=65280)
         embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
 
-        last_fortnight = list(data.death_history.keys())[-14:]
         case_history_value = ''
         death_history_value = ''
         recovery_history_value = ''
 
-        for date in last_fortnight:
+        last_case_fortnight = data.case_history[-14:]
+        last_death_fortnight = data.death_history[-14:]
+        last_recovered_fortnight = data.recovery_history[-14:]
+
+        for i in range(14):
             case_history_value = "{}\n**{}:** \
-                {}".format(case_history_value, date,
-                corona_api.format_number(data.case_history[date]) if data.case_history[date] else 'Unknown')
+                {}".format(case_history_value, last_case_fortnight[i].date,
+                corona_api.format_number(last_case_fortnight[i].value) if last_case_fortnight[i].value is not None else 'Unknown')
             death_history_value = "{}\n**{}:** \
-                {}".format(death_history_value,
-                date, corona_api.format_number(data.death_history[date]) if data.death_history[date] else 'Unknown')
+                {}".format(death_history_value, last_death_fortnight[i].date,
+                corona_api.format_number(last_death_fortnight[i].value) if last_death_fortnight[i].value is not None else 'Unknown')
             recovery_history_value = "{}\n**{}:** \
-                {}".format(recovery_history_value, date,
-                corona_api.format_number(data.recovery_history[date]) if data.recovery_history[date] else 'Unknown')
+                {}".format(recovery_history_value, last_recovered_fortnight[i].date,
+                corona_api.format_number(last_recovered_fortnight[i].value) if last_recovered_fortnight[i].value is not None else 'Unknown')
 
         embed.add_field(name="Number of cases", value=case_history_value)
         embed.add_field(name="Number of deaths", value=death_history_value)
