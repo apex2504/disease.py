@@ -151,3 +151,41 @@ class Client:
             recovery_history.append(HistoryEntry(date, historical_stats["timeline"]["recovered"][date]))
 
         return CountryHistory(name, case_history, death_history, recovery_history)
+
+
+    async def get_sorted_data(self, sort):
+        """
+        Get the data for all countries sorted by the parameter given.
+        When sorted alphabetically, data is returned Z-A rather than A-Z.
+        If the user wishes to reverse it, they are able to use list.reverse()
+        """
+        sort = sort.lower()
+        if sort != "cases" or sort != "deaths" or sort != "recovered" or sort != "alphabetical" or sort != "country"\
+        or sort != "todayCases" or sort != "todayDeaths" or sort != "casesPerOneMillion":
+            raise APIerror('Invalid sort parameter')
+        
+        if sort == "alphabetical":
+            sort = "country"
+
+        async with self.session.get('{}?sort={}'.format(self.all_countries, sort)) as resp:
+            if not resp.status == 200:
+                raise APIerror('Unexpected error, code {}'.format(resp.status))
+
+            data = await resp.json()
+
+        sorted_data = []
+
+        for country in data:
+            c = CountryStatistics(
+                country["country"],
+                country["cases"],
+                country["deaths"],
+                country["recoveries"],
+                country["todayCases"],
+                country["todayDeaths"],
+                country["critical"],
+                country["casesPerOneMillion"]
+            )
+            sorted_data.append(c)
+        
+        return sorted_data

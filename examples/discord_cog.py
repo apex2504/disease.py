@@ -123,6 +123,32 @@ class Coronavirus(commands.Cog):
         await ctx.send(embed=embed)
 
 
+    @commands.command(name="coronavirusleaderboard", aliases=["cvlb", "coronaleaderboard", "coronatop", "cvtop"])
+    async def coronavirus_leaderboard(self, ctx):
+        data = await self.corona.get_sorted_data("cases")
+
+        embed = discord.Embed(title="Top 15 cases", description="", color=65280)
+        embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
+
+        for i in range(1,16): #top 15
+            country = data[i-1]
+            name = country.name
+            #sometimes the stats are null/None.
+            if country.cases is None:
+                cases = 'Unknown'
+            else:
+                cases = corona_api.format_number(country.cases)
+            if country.deaths is None:
+                deaths = 'Unknown'
+            else:
+                deaths = corona_api.format_number(country.deaths)
+
+            embed.description = '**{}. {}:** {} cases, {} deaths.\n'.format(
+                i, name, corona_api.format_number(cases), corona_api.format_number(deaths)
+            )
+        
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Coronavirus(bot))
