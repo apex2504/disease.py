@@ -143,8 +143,8 @@ class Coronavirus(commands.Cog):
             else:
                 deaths = corona_api.format_number(country.deaths)
 
-            embed.description = '**{}. {}:** {} cases, {} deaths.\n'.format(
-                i, name, corona_api.format_number(cases), corona_api.format_number(deaths)
+            embed.description = '{}**{}. {}:** {} cases, {} deaths.\n'.format(
+                embed.description, i, name, cases, deaths
             )
         
         await ctx.send(embed=embed)
