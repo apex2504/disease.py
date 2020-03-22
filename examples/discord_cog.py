@@ -76,7 +76,7 @@ class Coronavirus(commands.Cog):
         
         """
         Get the history for Coronavirus (COVID-19) for a specified country.
-        This will display the past 10 days of data for cases, deaths and recoveries.
+        This will display the past 14 days of data for cases, deaths and recoveries.
 
         Params:
             ctx:
