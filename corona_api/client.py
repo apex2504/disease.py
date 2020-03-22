@@ -179,7 +179,7 @@ class Client:
                 country["country"],
                 country["cases"],
                 country["deaths"],
-                country["recoveries"],
+                country["recovered"],
                 country["todayCases"],
                 country["todayDeaths"],
                 country["critical"],
