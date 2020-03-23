@@ -10,7 +10,7 @@ class GlobalStatistics:
 
 
 class CountryStatistics:
-    def __init__(self, name, cases, deaths, recoveries, today_cases, today_deaths, critical, cases_per_million):
+    def __init__(self, name, cases, deaths, recoveries, today_cases, today_deaths, critical, cases_per_million, flag):
         self.name = name
         self.cases = cases
         self.deaths = deaths
@@ -19,6 +19,7 @@ class CountryStatistics:
         self.today_deaths = today_deaths
         self.critical = critical
         self.cases_per_million = cases_per_million
+        self.flag = flag
 
 
 class StateStatistics:

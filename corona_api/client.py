@@ -80,6 +80,7 @@ class Client:
         today_deaths = country_stats.get("todayDeaths", 0)
         total_critical = country_stats.get("critical", 0)
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
+        flag = country_stats["countryInfo"].get("flag", None)
         
         return CountryStatistics(
             country_name,
@@ -89,7 +90,8 @@ class Client:
             today_cases,
             today_deaths,
             total_critical,
-            cases_per_million
+            cases_per_million,
+            flag
             )
         
     
@@ -183,7 +185,8 @@ class Client:
                 country["todayCases"],
                 country["todayDeaths"],
                 country["critical"],
-                country["casesPerOneMillion"]
+                country["casesPerOneMillion"],
+                country["countryInfo"]["flag"]
             )
             sorted_data.append(c)
         
