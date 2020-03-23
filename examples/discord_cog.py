@@ -34,6 +34,9 @@ class Coronavirus(commands.Cog):
     
         if not country:
             data = await self.corona.all()
+        
+        elif country.lower() == "czech":
+            country = "czech republic"
 
         elif (country.lower() == "us" or country.lower() == "usa"):
             if state:
@@ -84,11 +87,7 @@ class Coronavirus(commands.Cog):
             country:
                 The country to get the history for.
         """
-        if country.lower() == 'usa' or country.lower() == 'united states': #corrections
-            country = 'us'
-        elif country.lower() == 'uk':
-            country = 'united kingdom'
-        elif 'korea' in country.lower():
+        if 'korea' in country.lower():
             country = 'korea, south' #no stats for north korea
 
         data = await self.corona.get_history(country)

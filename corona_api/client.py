@@ -140,7 +140,7 @@ class Client:
         death_history = []
         recovery_history = []
                 
-        name = historical_stats["country"]
+        name = historical_stats["standardizedCountryName"]
 
         if not historical_stats["timeline"]["cases"]:
             raise APIerror('Couldn\'t get stats for given country')
