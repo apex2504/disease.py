@@ -99,11 +99,11 @@ class Coronavirus(commands.Cog):
 
         case_history_value = ''
         death_history_value = ''
-        recovery_history_value = ''
+        #recovery_history_value = ''
 
         last_case_fortnight = data.case_history[-14:]
         last_death_fortnight = data.death_history[-14:]
-        last_recovered_fortnight = data.recovery_history[-14:]
+        #last_recovered_fortnight = data.recovery_history[-14:]
 
         for i in range(14):
             case_history_value = "{}\n**{}:** \
@@ -112,13 +112,13 @@ class Coronavirus(commands.Cog):
             death_history_value = "{}\n**{}:** \
                 {}".format(death_history_value, last_death_fortnight[i].date,
                 corona_api.format_number(last_death_fortnight[i].value) if last_death_fortnight[i].value is not None else 'Unknown')
-            recovery_history_value = "{}\n**{}:** \
-                {}".format(recovery_history_value, last_recovered_fortnight[i].date,
-                corona_api.format_number(last_recovered_fortnight[i].value) if last_recovered_fortnight[i].value is not None else 'Unknown')
+            #recovery_history_value = "{}\n**{}:** \
+            #    {}".format(recovery_history_value, last_recovered_fortnight[i].date,
+            #    corona_api.format_number(last_recovered_fortnight[i].value) if last_recovered_fortnight[i].value is not None else 'Unknown')
 
         embed.add_field(name="Number of cases", value=case_history_value)
         embed.add_field(name="Number of deaths", value=death_history_value)
-        embed.add_field(name="Number of recoveries",value=recovery_history_value)
+        #embed.add_field(name="Number of recoveries",value=recovery_history_value)
 
         await ctx.send(embed=embed)
 

@@ -17,7 +17,7 @@ class Client:
         self.all_countries = 'https://corona.lmao.ninja/countries'
         self.country_data = 'https://corona.lmao.ninja/countries/{}'
         self.states = 'https://corona.lmao.ninja/states'
-        self.historical = 'https://corona.lmao.ninja/historical/{}'
+        self.historical = 'https://corona.lmao.ninja/v2/historical/{}'
 
 
     async def all(self):
@@ -140,7 +140,7 @@ class Client:
 
         case_history = []
         death_history = []
-        recovery_history = []
+        #recovery_history = []
                 
         name = historical_stats["standardizedCountryName"]
 
@@ -150,9 +150,9 @@ class Client:
         for date in list(historical_stats["timeline"]["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
             case_history.append(HistoryEntry(date, historical_stats["timeline"]["cases"][date]))
             death_history.append(HistoryEntry(date, historical_stats["timeline"]["deaths"][date]))
-            recovery_history.append(HistoryEntry(date, historical_stats["timeline"]["recovered"][date]))
+            #recovery_history.append(HistoryEntry(date, historical_stats["timeline"]["recovered"][date])) #history v2 no longer includes recovery data
 
-        return CountryHistory(name, case_history, death_history, recovery_history)
+        return CountryHistory(name, case_history, death_history) #, recovery_history)
 
 
     async def get_sorted_data(self, sort):

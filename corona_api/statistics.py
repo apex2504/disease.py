@@ -40,8 +40,8 @@ class HistoryEntry:
 
 
 class CountryHistory:
-    def __init__(self, name, case_history, death_history, recovery_history):
+    def __init__(self, name, case_history, death_history): # , recovery_history):
         self.name = name
         self.case_history = case_history
         self.death_history = death_history
-        self.recovery_history = recovery_history
+        #self.recovery_history = recovery_history
