@@ -1,6 +1,6 @@
 from datetime import datetime
 import aiohttp
-from .statistics import GlobalStatistics, CountryStatistics, StateStatistics, CountryHistory, HistoryEntry
+from .statistics import GlobalStatistics, CountryStatistics, StateStatistics, HistoricalStatistics, HistoryEntry
 
 class APIerror(Exception):
     pass
@@ -39,7 +39,8 @@ class Client:
         cases = global_data.get("cases", 0)
         deaths = global_data.get("deaths", 0)
         recoveries = global_data.get("recovered", 0)
-        updated_epoch = global_data.get("updated", None)
+        updated_epoch = global_data.get("updated", 0)
+        active = global_data.get("active", cases-deaths-recoveries)
         updated = datetime.fromtimestamp(updated_epoch/1000.0)
 
         today_cases = 0
@@ -58,6 +59,7 @@ class Client:
             today_cases,
             today_deaths,
             total_critical,
+            active,
             updated
             )
 
@@ -79,7 +81,11 @@ class Client:
         today_cases = country_stats.get("todayCases", 0)
         today_deaths = country_stats.get("todayDeaths", 0)
         total_critical = country_stats.get("critical", 0)
+        active = country_stats.get("active", 0)
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
+        deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
+        updated_epoch = country_stats.get("updated", 0)
+        updated = datetime.fromtimestamp(updated_epoch/1000.0)
         flag = country_stats["countryInfo"].get("flag", None)
         
         return CountryStatistics(
@@ -90,7 +96,10 @@ class Client:
             today_cases,
             today_deaths,
             total_critical,
+            active,
             cases_per_million,
+            deaths_per_million,
+            updated,
             flag
             )
         
@@ -112,7 +121,6 @@ class Client:
         state_name = state_info.get("state", "Null")
         total_state_cases = state_info.get("cases", 0)
         total_state_deaths = state_info.get("deaths", 0)
-        total_state_recoveries = state_info.get("recovered", 0)
         today_cases = state_info.get("todayCases", 0)
         today_deaths = state_info.get("todayDeaths", 0)
         active = state_info.get("active", 0)
@@ -121,16 +129,16 @@ class Client:
             state_name,
             total_state_cases,
             total_state_deaths,
-            total_state_recoveries,
             today_cases,
             today_deaths,
             active
             )
         
 
-    async def get_history(self, country):
+    async def get_history(self, country="all"):
         """
-        Get historical data for a specific country.
+        Get historical data for a specific country or globally.
+        Defaults to 'all' in order to get global data. This can be overridden by the client.
         """
         async with self.session.get(self.historical.format(country)) as resp:
             if not resp.status == 200:
@@ -140,19 +148,27 @@ class Client:
 
         case_history = []
         death_history = []
-        #recovery_history = []
+        recovery_history = []
                 
-        name = historical_stats["country"]
+        name = historical_stats.get("country", "Global")
+        
+        if "timeline" not in historical_stats:
+            d = historical_stats
+        
+        else:
+            d = historical_stats["timeline"]
 
-        if not historical_stats["timeline"]["cases"]:
-            raise APIerror('Couldn\'t get stats for given country')
+        for date in list(d["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
+            case_history.append(HistoryEntry(date, d["cases"][date]))
+            death_history.append(HistoryEntry(date, d["deaths"][date]))
+            recovery_history.append(HistoryEntry(date, d["recovered"][date]))
 
-        for date in list(historical_stats["timeline"]["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
-            case_history.append(HistoryEntry(date, historical_stats["timeline"]["cases"][date]))
-            death_history.append(HistoryEntry(date, historical_stats["timeline"]["deaths"][date]))
-            #recovery_history.append(HistoryEntry(date, historical_stats["timeline"]["recovered"][date])) #history v2 no longer includes recovery data
-
-        return CountryHistory(name, case_history, death_history) #, recovery_history)
+        return HistoricalStatistics(
+            name,
+            case_history,
+            death_history,
+            recovery_history
+            )
 
 
     async def get_sorted_data(self, sort):
@@ -185,7 +201,10 @@ class Client:
                 country["todayCases"],
                 country["todayDeaths"],
                 country["critical"],
+                country["active"],
                 country["casesPerOneMillion"],
+                country["deathsPerOneMillion"],
+                datetime.fromtimestamp(country["updated"]/1000.0),
                 country["countryInfo"]["flag"]
             )
             sorted_data.append(c)
