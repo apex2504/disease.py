@@ -275,8 +275,8 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
         confirmed_cases = data["stats"].get("confirmed")
         deaths = data["stats"].get("deaths")
         recoveries = data["stats"].get("recovered")
-        _lat = data["coordinates"].get("latitude")
-        _long = data["coordinates"].get("longitude")
+        _lat = float(data["coordinates"].get("latitude"))
+        _long = float(data["coordinates"].get("longitude"))
 
         updated = datetime.strptime(data.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
 
@@ -290,3 +290,43 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
             _lat,
             _long
             )
+
+    
+    async def _request_yesterday(self):
+        endpoint = YESTERDAY.format(self.api_url)
+        yesterday_data = await self.request_client.make_request(endpoint)
+
+        return yesterday_data
+
+
+    async def yesterday_all(self):
+        """
+        Get yesterday's country data.
+        This returns the exact same data as get_all_countries,
+        except the stats are for yesterday.
+        """
+        yesterday_data = await self._request_yesterday()
+
+        list_of_countries = []
+
+        for c in yesterday_data:
+            list_of_countries.append(self._compile_country_data(c))
+
+        return list_of_countries
+
+    
+    async def yesterday_country(self, country):
+        """
+        Get yesterday's stats for a specific country.
+        This returns the same data as get_country_data,
+        except the stats are for yesterday.
+        """
+        yesterday_data = await self._request_yesterday()
+
+        country_info = next(c for c in yesterday_data if c["country"].lower() == country.lower() \
+            or str(c["countryInfo"].get("iso2")).lower() == country.lower() \
+            or str(c["countryInfo"].get("iso3")).lower() == country.lower())
+
+        country_yesterday = self._compile_country_data(country_info)
+
+        return country_yesterday

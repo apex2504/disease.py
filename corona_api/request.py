@@ -1,5 +1,5 @@
 import aiohttp
-from .exceptions import *
+from .exceptions import NotFound, APIError
 
 class RequestClient:
     def __init__(self):
