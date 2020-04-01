@@ -30,7 +30,7 @@ class Client:
         updated_epoch = global_data.get("updated", 0)
         active = global_data.get("active", cases-deaths-recoveries)
         infected_countries = global_data.get("affectedCountries")
-        updated = datetime.fromtimestamp(updated_epoch/1000.0, tz=timezone.utc)
+        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
         today_cases = 0
         today_deaths = 0
@@ -86,7 +86,7 @@ class Client:
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
         deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
         updated_epoch = country_stats.get("updated", 0)
-        updated = datetime.fromtimestamp(updated_epoch/1000.0, tz=timezone.utc),
+        updated = datetime.utcfromtimestamp(updated_epoch/1000.0),
 
         countryInfo = country_stats["countryInfo"]
 
