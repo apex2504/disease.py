@@ -270,26 +270,33 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
         endpoint = JHU_CSSE.format(self.api_url)
         data = await self.request_client.make_request(endpoint)
 
-        country = data.get("country")
-        province = data.get("province")
-        confirmed_cases = data["stats"].get("confirmed")
-        deaths = data["stats"].get("deaths")
-        recoveries = data["stats"].get("recovered")
-        _lat = float(data["coordinates"].get("latitude"))
-        _long = float(data["coordinates"].get("longitude"))
+        statistics = []
 
-        updated = datetime.strptime(data.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
+        for cp in data:
+            country = cp.get("country")
+            province = cp.get("province")
+            confirmed_cases = cp["stats"].get("confirmed")
+            deaths = cp["stats"].get("deaths")
+            recoveries = cp["stats"].get("recovered")
+            _lat = float(cp["coordinates"].get("latitude"))
+            _long = float(cp["coordinates"].get("longitude"))
 
-        return JhuCsseStatistics(
-            country,
-            province,
-            updated,
-            confirmed_cases,
-            deaths,
-            recoveries,
-            _lat,
-            _long
-            )
+            updated = datetime.strptime(cp.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
+
+            jhu_statistic = JhuCsseStatistics(
+                country,
+                province,
+                updated,
+                confirmed_cases,
+                deaths,
+                recoveries,
+                _lat,
+                _long
+                )
+            
+            statistics.append(jhu_statistic)
+
+        return statistics
 
     
     async def _request_yesterday(self):
