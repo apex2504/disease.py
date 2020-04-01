@@ -1,0 +1,8 @@
+GLOBAL_DATA = '{}/all'
+ALL_COUNTRIES = '{}/countries'
+SORTED_COUNTRIES = '{}/countries?sort={}'
+COUNTRY_DATA = '{}/countries/{}'
+STATES = '{}/states'
+HISTORICAL_COUNTRY = '{}/v2/historical/{}'
+HISTORICAL_PROVINCE = '{}/v2/historical/{}/{}'
+JHU_CSSE = '{}/v2/jhucsse'

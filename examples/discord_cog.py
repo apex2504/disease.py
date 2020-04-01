@@ -28,7 +28,7 @@ def generate_country_embed(embed, data):
     embed.add_field(name="Deaths per million people", value = corona_api.format_number(data.deaths_per_million))
     embed.add_field(name="Last updated", value = corona_api.format_date(data.updated))
     embed.description = "**Country: {}**".format(data.name)
-    embed.set_thumbnail(url=data.flag)
+    embed.set_thumbnail(url=data.info.flag)
 
 def generate_state_embed(embed, data):
     embed.add_field(name="Active cases", value = corona_api.format_number(data.active))
@@ -68,7 +68,7 @@ class Coronavirus(commands.Cog):
 
         elif (country.lower() == "us" or country.lower() == "usa"):
             if state:
-                data = await self.corona.get_state_info(state)
+                data = await self.corona.get_single_state(state)
                 
             else:
                 data = await self.corona.get_country_data(country)
@@ -109,7 +109,7 @@ class Coronavirus(commands.Cog):
         if 'korea' in country.lower():
             country = 'korea, south' #no stats for north korea
 
-        data = await self.corona.get_history(country)
+        data = await self.corona.get_country_history(country)
 
         name = data.name.title()
         embed = discord.Embed(title="Coronavirus history", description=f"**Country: {name}**", color=65280)
