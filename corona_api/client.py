@@ -9,7 +9,7 @@ class Client:
     """
     Handles interactions with the corona.lmao.ninja API
     """
-    def __init__(self, api_url='https://corona.lmao/ninja'):
+    def __init__(self, api_url='https://corona.lmao.ninja'):
         self.api_url = api_url
         self.request_client = RequestClient()
 
