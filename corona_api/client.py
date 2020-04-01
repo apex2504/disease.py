@@ -86,7 +86,7 @@ class Client:
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
         deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
         updated_epoch = country_stats.get("updated", 0)
-        updated = datetime.utcfromtimestamp(updated_epoch/1000.0),
+        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
         countryInfo = country_stats["countryInfo"]
 
