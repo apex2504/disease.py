@@ -87,7 +87,7 @@ class Coronavirus(commands.Cog):
         if not country:
             data = await self.corona.all()
 
-        if province:
+        elif province:
             if (country.lower() == "us" or country.lower() == "usa"):
                 data = await self.corona.get_single_state(province)
                 
