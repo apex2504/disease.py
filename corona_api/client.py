@@ -300,7 +300,7 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
         return statistics
 
 
-    async def get_jhu_csse_counties(self, state, county):
+    async def get_jhu_county_data(self, state, county):
         """
         Get the data for a specific county within a US state.
         """
