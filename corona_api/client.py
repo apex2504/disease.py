@@ -278,8 +278,8 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
             confirmed_cases = cp["stats"].get("confirmed")
             deaths = cp["stats"].get("deaths")
             recoveries = cp["stats"].get("recovered")
-            _lat = float(cp["coordinates"].get("latitude"))
-            _long = float(cp["coordinates"].get("longitude"))
+            _lat = float(cp["coordinates"].get("latitude")) if cp["coordinates"].get("latitude") else 0.0
+            _long = float(cp["coordinates"].get("longitude")) if cp["coordinates"].get("longitude") else 0.0
 
             updated = datetime.strptime(cp.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
 
