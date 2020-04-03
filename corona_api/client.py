@@ -286,6 +286,7 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
             jhu_statistic = JhuCsseStatistics(
                 country,
                 province,
+                None,
                 updated,
                 confirmed_cases,
                 deaths,
@@ -297,6 +298,42 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
             statistics.append(jhu_statistic)
 
         return statistics
+
+
+    async def get_jhu_csse_counties(self, state, county):
+        """
+        Get the data for a specific county within a US state.
+        """
+        endpoint = JHU_CSSE_COUNTIES.format(self.api_url, county)
+        all_matching_counties = await self.request_client.make_request(endpoint)
+
+        matching_county = next(place for place in all_matching_counties if place["province"].lower() == state.lower() \
+            and place["county"].lower() == county.lower())
+
+        country = matching_county.get("country") #will always be 'US'
+        province = matching_county.get("province")
+        county_name = matching_county.get("province")
+        confirmed_cases = matching_county["stats"].get("confirmed")
+        deaths = matching_county["stats"].get("deaths")
+        recoveries = matching_county["stats"].get("recovered")
+        _lat = float(matching_county["coordinates"].get("latitude")) if matching_county["coordinates"].get("latitude") else 0.0
+        _long = float(matching_county["coordinates"].get("longitude")) if matching_county["coordinates"].get("longitude") else 0.0
+
+        updated = datetime.strptime(matching_county.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
+
+        stat = JhuCsseStatistics(
+                country,
+                province,
+                county_name,
+                updated,
+                confirmed_cases,
+                deaths,
+                recoveries,
+                _lat,
+                _long
+                )
+
+        return stat
 
     
     async def _request_yesterday(self):

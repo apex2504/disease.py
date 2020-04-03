@@ -63,9 +63,10 @@ class HistoricalStatistics:
 
     
 class JhuCsseStatistics:
-    def __init__(self, country, province, updated, confirmed_cases, deaths, recoveries, _lat, _long):
+    def __init__(self, country, province, county, updated, confirmed_cases, deaths, recoveries, _lat, _long):
         self.country_name = country
         self.province_name = province
+        self.county_name = county
         self.updated = updated
         self.confirmed_cases = confirmed_cases
         self.deaths = deaths
