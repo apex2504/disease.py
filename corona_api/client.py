@@ -131,14 +131,6 @@ class Client:
             list_of_countries.append(self._compile_country_data(c))
 
         return list_of_countries
-        
-        
-    async def _request_all_states(self):
-        """
-        Request the stats for all US states
-        """
-        endpoint = STATES.format(self.api_url)
-        return await self.request_client.make_request(endpoint)
 
 
     def _compile_state(self, state_dict):
@@ -165,7 +157,8 @@ class Client:
         """
         Get the stats for all US states
         """
-        state_info = await self._request_all_states()
+        endpoint = ALL_STATES.format(self.api_url)
+        state_info = await self.request_client.make_request(endpoint)
 
         state_data = []
 
@@ -180,9 +173,8 @@ class Client:
         """
         Get the stats for a specific province of a country
         """
-        all_states = await self._request_all_states()
-
-        state_info = next(s for s in all_states if s["state"].lower() == state.lower())
+        endpoint = SINGLE_STATE.format(self.api_url, state)
+        state_info = await self.request_client.make_request(endpoint)
 
         compiled_state = self._compile_state(state_info)
 
@@ -217,22 +209,22 @@ class Client:
             )
 
 
-    async def get_country_history(self, country="all"):
+    async def get_country_history(self, country="all", last_days='all'):
         """
         Get historical data for a specific country or globally.
         Defaults to 'all' in order to get global data. This can be overridden by the client.
         """
-        endpoint = HISTORICAL_COUNTRY.format(self.api_url, country)
+        endpoint = HISTORICAL_COUNTRY.format(self.api_url, country, last_days)
         historical_stats = await self.request_client.make_request(endpoint)
 
         return self._generate_history(historical_stats)
 
 
-    async def get_province_history(self, country, province):
+    async def get_province_history(self, country, province, last_days='all'):
         """
         Get the historical data for a province within a country.
         """
-        endpoint = HISTORICAL_PROVINCE.format(self.api_url, country, province)
+        endpoint = HISTORICAL_PROVINCE.format(self.api_url, country, province, last_days)
         data = await self.request_client.make_request(endpoint)
 
         return self._generate_history(data)
