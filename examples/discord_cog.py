@@ -1,6 +1,10 @@
 """
 This is an example cog for bots written in discord.py (pip install discord.py).
-The cog only contains one command which gets the stats for the virus and outputs it in the channel.
+The cog only contains three commands which allow you to:
+- get stats globally or for a country/state/province,
+- get history globally or for a country/province,
+- get the leaderboard for the top 15 countries with the most cases.
+
 """
 
 import discord
