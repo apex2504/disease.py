@@ -250,7 +250,10 @@ class Client:
         endpoint = STATE_COUNTY.format(state, county, last_days)
         data = self.request_client.make_request(endpoint)
 
-        return self._generate_history(data, True)
+        matching_county = next(place for place in data if place["province"].lower() == state.lower() \
+            and place["county"].lower() == county.lower())
+
+        return self._generate_history(matching_county, True)
 
 
     async def get_sorted_data(self, sort='cases'):
