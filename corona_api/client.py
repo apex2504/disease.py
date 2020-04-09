@@ -247,7 +247,7 @@ class Client:
         """
         Get the historical data for a county within a US state.
         """
-        endpoint = STATE_COUNTY.format(state, county, last_days)
+        endpoint = STATE_COUNTY.format(self.api_url, state, county, last_days)
         data = self.request_client.make_request(endpoint)
 
         matching_county = next(place for place in data if place["province"].lower() == state.lower() \
