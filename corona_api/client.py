@@ -19,27 +19,23 @@ class Client:
         Get the global stats for Coronavirus COVID-19
         """
         global_endpoint = GLOBAL_DATA.format(self.api_url)
-        country_endpoint = ALL_COUNTRIES.format(self.api_url)
 
         global_data = await self.request_client.make_request(global_endpoint)
-        country_data = await self.request_client.make_request(country_endpoint)
 
         cases = global_data.get("cases", 0)
         deaths = global_data.get("deaths", 0)
         recoveries = global_data.get("recovered", 0)
+        today_cases = global_data.get("todayCases", 0)
+        today_deaths = global_data.get("todayDeaths", 0)
+        total_critical = global_data.get("critical", 0)
         updated_epoch = global_data.get("updated", 0)
         active = global_data.get("active", cases-deaths-recoveries)
+        tests = global_data.get("tests", 0)
+        cases_per_million = global_data.get("casesPerOneMillion", 0)
+        deaths_per_million = global_data.get("deathsPerOneMillion", 0)
+        tests_per_million = global_data.get("testsPerOneMillion", 0)
         infected_countries = global_data.get("affectedCountries")
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
-
-        today_cases = 0
-        today_deaths = 0
-        total_critical = 0
-
-        for c in country_data:
-            today_cases += c["todayCases"] if c["todayCases"] else 0
-            today_deaths += c["todayDeaths"] if c["todayDeaths"] else 0
-            total_critical += c["critical"] if c["critical"] else 0
 
         return GlobalStatistics(
             cases,
@@ -49,8 +45,12 @@ class Client:
             today_deaths,
             total_critical,
             active,
+            tests,
+            cases_per_million,
+            deaths_per_million,
+            tests_per_million,
             infected_countries,
-            updated
+            updated,
             )
 
 
@@ -83,8 +83,10 @@ class Client:
         today_deaths = country_stats.get("todayDeaths", 0)
         total_critical = country_stats.get("critical", 0)
         active = country_stats.get("active", 0)
+        tests = country_stats.get("tests", 0)
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
         deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
+        tests_per_million = country_stats.get("testsPerOneMillion", 0)
         updated_epoch = country_stats.get("updated", 0)
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
@@ -102,9 +104,11 @@ class Client:
             today_deaths,
             total_critical,
             active,
+            tests,
             cases_per_million,
             deaths_per_million,
-            updated,
+            tests_per_million,
+            updated
         )
 
     
@@ -140,6 +144,8 @@ class Client:
         today_cases = state_dict.get("todayCases", 0)
         today_deaths = state_dict.get("todayDeaths", 0)
         active = state_dict.get("active", 0)
+        tests = state_dict.get("tests", 0)
+        tests_per_million = state_dict.get("testsPerOneMillion", 0)
 
         state_stats = StateStatistics(
         state_name,
@@ -147,7 +153,9 @@ class Client:
         total_state_deaths,
         today_cases,
         today_deaths,
-        active
+        active,
+        tests,
+        tests_per_million
         )
 
         return state_stats

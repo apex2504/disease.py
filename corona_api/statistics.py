@@ -1,5 +1,6 @@
 class GlobalStatistics:
-    def __init__(self, cases, deaths, recoveries, today_cases, today_deaths, total_critical, active, infected_countries, updated):
+    def __init__(self, cases, deaths, recoveries, today_cases, today_deaths, total_critical, active,
+                tests, cases_per_million, deaths_per_million, tests_per_million, infected_countries, updated):
         self.cases = cases
         self.deaths = deaths
         self.recoveries = recoveries
@@ -7,6 +8,10 @@ class GlobalStatistics:
         self.today_deaths = today_deaths
         self.critical = total_critical
         self.active = active
+        self.tests = tests
+        self.cases_per_million = cases_per_million
+        self.deaths_per_million = deaths_per_million
+        self.tests_per_million = tests_per_million
         self.infected_countries = infected_countries
         self.updated = updated
 
@@ -22,7 +27,8 @@ class CountryInfo:
 
 
 class CountryStatistics:
-    def __init__(self, info, name, cases, deaths, recoveries, today_cases, today_deaths, critical, active, cases_per_million, deaths_per_million, updated):
+    def __init__(self, info, name, cases, deaths, recoveries, today_cases, today_deaths, critical, active, 
+                tests, cases_per_million, deaths_per_million, tests_per_million, updated):
         self.info = info
         self.name = name
         self.cases = cases
@@ -32,19 +38,23 @@ class CountryStatistics:
         self.today_deaths = today_deaths
         self.critical = critical
         self.active = active
+        self.tests = tests
         self.cases_per_million = cases_per_million
         self.deaths_per_million = deaths_per_million
+        self.tests_per_million = tests_per_million
         self.updated = updated
 
 
 class StateStatistics:
-    def __init__(self, name, cases, deaths, today_cases, today_deaths, active):
+    def __init__(self, name, cases, deaths, today_cases, today_deaths, active, tests, tests_per_million):
         self.name = name
         self.cases = cases
         self.deaths = deaths
         self.today_cases = today_cases
         self.today_deaths = today_deaths
         self.active = active
+        self.tests = tests
+        self.tests_per_million = tests_per_million
 
 
 class HistoryEntry:
