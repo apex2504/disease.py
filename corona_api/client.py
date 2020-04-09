@@ -189,13 +189,18 @@ class Client:
         return compiled_state
 
 
-    def _generate_history(self, historical_stats):
+    def _generate_history(self, historical_stats, is_county=False):
         case_history = []
         death_history = []
         recovery_history = []
-                
-        country_name = historical_stats.get("country", "Global")
-        province_name = historical_stats.get("province")
+
+        if not is_county:        
+            country_name = historical_stats.get("country", "Global")
+            province_name = historical_stats.get("province")
+
+        else:
+            country_name = historical_stats.get("province")
+            province_name = historical_stats.get("county")
         
         if "timeline" not in historical_stats: #if country was 'all'
             d = historical_stats
@@ -236,6 +241,16 @@ class Client:
         data = await self.request_client.make_request(endpoint)
 
         return self._generate_history(data)
+
+
+    async def get_state_county_history(self, state, county, last_days='all'):
+        """
+        Get the historical data for a county within a US state.
+        """
+        endpoint = STATE_COUNTY.format(state, county, last_days)
+        data = self.request_client.make_request(endpoint)
+
+        return self._generate_history(data, True)
 
 
     async def get_sorted_data(self, sort='cases'):
