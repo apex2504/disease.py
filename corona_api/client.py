@@ -197,6 +197,7 @@ class Client:
         if not is_county:        
             country_name = historical_stats.get("country", "Global")
             province_name = historical_stats.get("province")
+            
 
         else:
             country_name = historical_stats.get("province")
@@ -208,10 +209,13 @@ class Client:
         else:
             d = historical_stats["timeline"]
 
+        recovery_history = None #state counties dont provide recovered data
+
         for date in list(d["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
             case_history.append(HistoryEntry(date, d["cases"][date]))
             death_history.append(HistoryEntry(date, d["deaths"][date]))
-            recovery_history.append(HistoryEntry(date, d["recovered"][date]))
+            if not is_county:
+                recovery_history.append(HistoryEntry(date, d["recovered"][date]))
 
         return HistoricalStatistics(
             country_name,
@@ -247,8 +251,8 @@ class Client:
         """
         Get the historical data for a county within a US state.
         """
-        endpoint = STATE_COUNTY.format(self.api_url, state, county, last_days)
-        data = self.request_client.make_request(endpoint)
+        endpoint = STATE_COUNTY.format(self.api_url, state, last_days)
+        data = await self.request_client.make_request(endpoint)
 
         matching_county = next(place for place in data if place["province"].lower() == state.lower() \
             and place["county"].lower() == county.lower())

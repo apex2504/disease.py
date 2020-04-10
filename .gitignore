@@ -1,3 +1,5 @@
 make_release.bat
 dist/
 corona_api.egg-info/
+corona_api/__pycache__/
+before_release.py
