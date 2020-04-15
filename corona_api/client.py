@@ -14,14 +14,14 @@ class Client:
         self.request_client = RequestClient()
 
     
-    def check_sort(self, sort):
+    def _check_sort(self, sort):
         if sort not in ["cases", "deaths", "recovered", "active", "tests",
                         "critical", "deathsPerOneMillion", "testsPerOneMillion",
                         "todayCases", "todayDeaths", "casesPerOneMillion", "active"]:
             raise BadSortParameter('Invalid sort parameter.')
 
 
-    def check_yesterday(self, value):
+    def _check_yesterday(self, value):
         if not isinstance(value, bool):
             raise BadYesterdayParameter('Value for yesterday should either be True or False')
 
@@ -84,6 +84,76 @@ class Client:
         )
 
 
+    def _generate_history(self, historical_stats, is_county=False):
+        case_history = []
+        death_history = []
+        recovery_history = []
+
+        if not is_county:        
+            country_name = historical_stats.get("country", "Global")
+            province_name = historical_stats.get("province")
+            
+
+        else:
+            country_name = historical_stats.get("province")
+            province_name = historical_stats.get("county")
+        
+        if "timeline" not in historical_stats: #if country was 'all'
+            d = historical_stats
+        
+        else:
+            d = historical_stats["timeline"]
+
+        recovery_history = None #state counties dont provide recovered data
+
+        for date in list(d["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
+            case_history.append(HistoryEntry(date, d["cases"][date]))
+            death_history.append(HistoryEntry(date, d["deaths"][date]))
+            if not is_county:
+                recovery_history.append(HistoryEntry(date, d["recovered"][date]))
+
+        return HistoricalStatistics(
+            country_name,
+            case_history,
+            death_history,
+            recovery_history,
+            province_name
+            )
+
+
+    def _compile_continent(self, data):
+        name = data.get('continent')
+        cases = data.get("cases", 0)
+        deaths = data.get("deaths", 0)
+        recoveries = data.get("recovered", 0)
+        today_cases = data.get("todayCases", 0)
+        today_deaths = data.get("todayDeaths", 0)
+        critical = data.get("critical", 0)
+        updated_epoch = data.get("updated", 0)
+        active = data.get("active", cases-deaths-recoveries)
+        tests = data.get("tests", 0)
+        cases_per_million = data.get("casesPerOneMillion", 0)
+        deaths_per_million = data.get("deathsPerOneMillion", 0)
+        tests_per_million = data.get("testsPerOneMillion", 0)
+        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
+
+        return ContinentStatistics(
+            name,
+            cases,
+            deaths,
+            recoveries,
+            critical,
+            active,
+            tests,
+            today_cases,
+            today_deaths,
+            cases_per_million,
+            deaths_per_million,
+            tests_per_million,
+            updated
+        )    
+
+
     async def all(self, **kwargs):
         """
         Get the global stats for Coronavirus COVID-19
@@ -91,7 +161,7 @@ class Client:
         get_yesterday = kwargs.get('yesterday', False)
 
         if get_yesterday:
-            self.check_yesterday(get_yesterday)
+            self._check_yesterday(get_yesterday)
             global_endpoint = GLOBAL_YESTERDAY.format(self.api_url)
 
         else:
@@ -136,7 +206,7 @@ class Client:
         Get the data for a specific country.
         """
         get_yesterday = kwargs.get('yesterday', False)
-        self.check_yesterday(get_yesterday)
+        self._check_yesterday(get_yesterday)
 
         if get_yesterday:
             endpoint = GLOBAL_YESTERDAY.format(self.api_url)
@@ -157,10 +227,10 @@ class Client:
         sort = kwargs.get('sort')
 
         if get_yesterday:
-            self.check_yesterday(get_yesterday)
+            self._check_yesterday(get_yesterday)
 
         if sort:
-            self.check_sort(sort)
+            self._check_sort(sort)
 
         if sort and get_yesterday:
             endpoint = ALL_COUNTRIES_YESTERDAY_SORTED.format(self.api_url)
@@ -216,10 +286,10 @@ class Client:
         sort = kwargs.get('sort')
 
         if get_yesterday:
-            self.check_yesterday(get_yesterday)
+            self._check_yesterday(get_yesterday)
 
         if sort:
-            self.check_sort(sort)
+            self._check_sort(sort)
 
         if sort and get_yesterday:
             endpoint = ALL_STATES_YESTERDAY_SORTED.format(self.api_url)
@@ -251,7 +321,7 @@ class Client:
         get_yesterday = kwargs.get('yesterday')
 
         if get_yesterday:
-            self.check_yesterday(get_yesterday)
+            self._check_yesterday(get_yesterday)
             endpoint = SINGLE_STATE_YESTERDAY.format(self.api_url)
 
         else:
@@ -263,43 +333,6 @@ class Client:
         compiled_state = self._compile_state(state_info)
 
         return compiled_state
-
-
-    def _generate_history(self, historical_stats, is_county=False):
-        case_history = []
-        death_history = []
-        recovery_history = []
-
-        if not is_county:        
-            country_name = historical_stats.get("country", "Global")
-            province_name = historical_stats.get("province")
-            
-
-        else:
-            country_name = historical_stats.get("province")
-            province_name = historical_stats.get("county")
-        
-        if "timeline" not in historical_stats: #if country was 'all'
-            d = historical_stats
-        
-        else:
-            d = historical_stats["timeline"]
-
-        recovery_history = None #state counties dont provide recovered data
-
-        for date in list(d["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
-            case_history.append(HistoryEntry(date, d["cases"][date]))
-            death_history.append(HistoryEntry(date, d["deaths"][date]))
-            if not is_county:
-                recovery_history.append(HistoryEntry(date, d["recovered"][date]))
-
-        return HistoricalStatistics(
-            country_name,
-            case_history,
-            death_history,
-            recovery_history,
-            province_name
-            )
 
 
     async def get_country_history(self, country="all", last_days='all'):
@@ -418,10 +451,10 @@ class Client:
         sort = kwargs.get('sort')
 
         if get_yesterday:
-            self.check_yesterday(get_yesterday)
+            self._check_yesterday(get_yesterday)
 
         if sort:
-            self.check_sort(sort)
+            self._check_sort(sort)
 
         if sort and get_yesterday:
             endpoint = ALL_CONTINENTS_YESTERDAY_SORTED.format(self.api_url)
@@ -437,33 +470,23 @@ class Client:
 
         data = self.request_client.make_request(endpoint)
 
-        name = data.get('continent')
-        cases = data.get("cases", 0)
-        deaths = data.get("deaths", 0)
-        recoveries = data.get("recovered", 0)
-        today_cases = data.get("todayCases", 0)
-        today_deaths = data.get("todayDeaths", 0)
-        total_critical = data.get("critical", 0)
-        updated_epoch = data.get("updated", 0)
-        active = data.get("active", cases-deaths-recoveries)
-        tests = data.get("tests", 0)
-        cases_per_million = data.get("casesPerOneMillion", 0)
-        deaths_per_million = data.get("deathsPerOneMillion", 0)
-        tests_per_million = data.get("testsPerOneMillion", 0)
-        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
+        return self._compile_continent(data)
 
-        return ContinentStatistics(
-            name,
-            cases,
-            deaths,
-            recoveries,
-            critical,
-            active,
-            tests,
-            today_cases,
-            today_deaths,
-            cases_per_million,
-            deaths_per_million,
-            tests_per_million,
-            updated
-        )
+
+    async def get_single_continent(self, continent, **kwargs):
+        """
+        Get the statistics for a single continent.
+        """
+        get_yesterday = kwargs.get('yesterday')
+
+        if get_yesterday:
+            self._check_yesterday(get_yesterday)
+            endpoint = CONTINENT_YESTERDAY.format(self.api_url. continent)
+        else:
+            endpoint = CONTINENT_DATA.format(self.api_url)
+
+        data = self.request_client.make_request(endpoint)
+
+        return self._compile_continent(data)
+
+        
