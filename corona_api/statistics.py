@@ -83,3 +83,21 @@ class JhuCsseStatistics:
         self.recoveries = recoveries
         self.latitude = _lat
         self.longitude = _long
+
+
+class ContinentStatistics:
+    def __init__(self, name, cases, deaths, recoveries, critical, active, tests, today_cases,
+                 today_deaths, cases_per_million, deaths_per_million, tests_per_million, updated):
+        self.name = name
+        self.cases = cases
+        self.deaths = deaths
+        self.recoveries = recoveries
+        self.critical = critical
+        self.active = active
+        self.tests = tests
+        self.today_cases = today_cases
+        self.today_deaths = today_deaths
+        self.cases_per_million = cases_per_million
+        self.deaths_per_million = deaths_per_million
+        self.tests_per_million = tests_per_million
+        self.updated = updated

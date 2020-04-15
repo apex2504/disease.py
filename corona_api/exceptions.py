@@ -6,3 +6,6 @@ class NotFound(Exception):
 
 class BadSortParameter(Exception):
     pass
+
+class BadYesterdayParameter(Exception):
+    pass

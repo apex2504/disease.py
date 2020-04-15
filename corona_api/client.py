@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from .request import RequestClient
-from .statistics import GlobalStatistics, CountryStatistics, CountryInfo, StateStatistics, HistoricalStatistics, HistoryEntry, JhuCsseStatistics
-from .exceptions import BadSortParameter
+from .statistics import *
+from .exceptions import BadSortParameter, BadYesterdayParameter
 from .endpoints import *
 
 
@@ -13,47 +13,19 @@ class Client:
         self.api_url = api_url
         self.request_client = RequestClient()
 
-
-    async def all(self):
-        """
-        Get the global stats for Coronavirus COVID-19
-        """
-        global_endpoint = GLOBAL_DATA.format(self.api_url)
-
-        global_data = await self.request_client.make_request(global_endpoint)
-
-        cases = global_data.get("cases", 0)
-        deaths = global_data.get("deaths", 0)
-        recoveries = global_data.get("recovered", 0)
-        today_cases = global_data.get("todayCases", 0)
-        today_deaths = global_data.get("todayDeaths", 0)
-        total_critical = global_data.get("critical", 0)
-        updated_epoch = global_data.get("updated", 0)
-        active = global_data.get("active", cases-deaths-recoveries)
-        tests = global_data.get("tests", 0)
-        cases_per_million = global_data.get("casesPerOneMillion", 0)
-        deaths_per_million = global_data.get("deathsPerOneMillion", 0)
-        tests_per_million = global_data.get("testsPerOneMillion", 0)
-        infected_countries = global_data.get("affectedCountries")
-        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
-
-        return GlobalStatistics(
-            cases,
-            deaths,
-            recoveries,
-            today_cases,
-            today_deaths,
-            total_critical,
-            active,
-            tests,
-            cases_per_million,
-            deaths_per_million,
-            tests_per_million,
-            infected_countries,
-            updated,
-            )
+    
+    def check_sort(self, sort):
+        if sort not in ["cases", "deaths", "recovered", "active", "tests",
+                        "critical", "deathsPerOneMillion", "testsPerOneMillion",
+                        "todayCases", "todayDeaths", "casesPerOneMillion", "active"]:
+            raise BadSortParameter('Invalid sort parameter.')
 
 
+    def check_yesterday(self, value):
+        if not isinstance(value, bool):
+            raise BadYesterdayParameter('Value for yesterday should either be True or False')
+
+    
     def _compile_countryInfo(self, countryInfo):
         _id = countryInfo.get("_id")
         iso2 = countryInfo.get("iso2")
@@ -111,22 +83,97 @@ class Client:
             updated
         )
 
+
+    async def all(self, **kwargs):
+        """
+        Get the global stats for Coronavirus COVID-19
+        """
+        get_yesterday = kwargs.get('yesterday', False)
+
+        if get_yesterday:
+            self.check_yesterday(get_yesterday)
+            global_endpoint = GLOBAL_YESTERDAY.format(self.api_url)
+
+        else:
+            global_endpoint = GLOBAL_DATA.format(self.api_url)
+
+        global_data = await self.request_client.make_request(global_endpoint)
+
+        cases = global_data.get("cases", 0)
+        deaths = global_data.get("deaths", 0)
+        recoveries = global_data.get("recovered", 0)
+        today_cases = global_data.get("todayCases", 0)
+        today_deaths = global_data.get("todayDeaths", 0)
+        total_critical = global_data.get("critical", 0)
+        updated_epoch = global_data.get("updated", 0)
+        active = global_data.get("active", cases-deaths-recoveries)
+        tests = global_data.get("tests", 0)
+        cases_per_million = global_data.get("casesPerOneMillion", 0)
+        deaths_per_million = global_data.get("deathsPerOneMillion", 0)
+        tests_per_million = global_data.get("testsPerOneMillion", 0)
+        infected_countries = global_data.get("affectedCountries")
+        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
+
+        return GlobalStatistics(
+            cases,
+            deaths,
+            recoveries,
+            today_cases,
+            today_deaths,
+            total_critical,
+            active,
+            tests,
+            cases_per_million,
+            deaths_per_million,
+            tests_per_million,
+            infected_countries,
+            updated,
+            )
+
     
-    async def get_country_data(self, country):
+    async def get_country_data(self, country, **kwargs):
         """
         Get the data for a specific country.
         """
+        get_yesterday = kwargs.get('yesterday', False)
+        self.check_yesterday(get_yesterday)
+
+        if get_yesterday:
+            endpoint = GLOBAL_YESTERDAY.format(self.api_url)
+        else:
+            endpoint = GLOBAL_DATA.format(self.api_url)
+
         endpoint = COUNTRY_DATA.format(self.api_url, country)
         country_stats = await self.request_client.make_request(endpoint)
 
         return self._compile_country_data(country_stats)
 
     
-    async def get_all_countries(self):
+    async def get_all_countries(self, **kwargs):
         """
         Get the data for every infected country.
         """
-        endpoint = ALL_COUNTRIES.format(self.api_url)
+        get_yesterday = kwargs.get('yesterday')
+        sort = kwargs.get('sort')
+
+        if get_yesterday:
+            self.check_yesterday(get_yesterday)
+
+        if sort:
+            self.check_sort(sort)
+
+        if sort and get_yesterday:
+            endpoint = ALL_COUNTRIES_YESTERDAY_SORTED.format(self.api_url)
+
+        elif sort:
+            endpoint = ALL_COUNTRIES_SORTED(self.api_url, sort)
+
+        elif get_yesterday:
+            endpoint = ALL_COUNTRIES_YESTERDAY.format(self.api_url)
+        
+        else:
+            endpoint = ALL_COUNTRIES.format(self.api_url)
+            
         all_countries = await self.request_client.make_request(endpoint)
 
         list_of_countries = []
@@ -161,11 +208,31 @@ class Client:
         return state_stats
     
     
-    async def get_all_states(self):
+    async def get_all_states(self, **kwargs):
         """
         Get the stats for all US states
         """
-        endpoint = ALL_STATES.format(self.api_url)
+        get_yesterday = kwargs.get('yesterday')
+        sort = kwargs.get('sort')
+
+        if get_yesterday:
+            self.check_yesterday(get_yesterday)
+
+        if sort:
+            self.check_sort(sort)
+
+        if sort and get_yesterday:
+            endpoint = ALL_STATES_YESTERDAY_SORTED.format(self.api_url)
+
+        elif sort:
+            endpoint = ALL_STATES_SORTED(self.api_url, sort)
+
+        elif get_yesterday:
+            endpoint = ALL_STATES_YESTERDAY.format(self.api_url)
+        
+        else:
+            endpoint = ALL_STATES.format(self.api_url)
+
         state_info = await self.request_client.make_request(endpoint)
 
         state_data = []
@@ -177,10 +244,19 @@ class Client:
         return state_data
 
     
-    async def get_single_state(self, state):
+    async def get_single_state(self, state, **kwargs):
         """
         Get the stats for a specific province of a country
         """
+        get_yesterday = kwargs.get('yesterday')
+
+        if get_yesterday:
+            self.check_yesterday(get_yesterday)
+            endpoint = SINGLE_STATE_YESTERDAY.format(self.api_url)
+
+        else:
+            endpoint = SINGLE_STATE.format(self.api_url)
+
         endpoint = SINGLE_STATE.format(self.api_url, state)
         state_info = await self.request_client.make_request(endpoint)
 
@@ -259,30 +335,6 @@ class Client:
 
         return self._generate_history(matching_county, True)
 
-
-    async def get_sorted_data(self, sort='cases'):
-        """
-        Get the data for all countries sorted by the parameter given.
-        When sorted alphabetically, data is returned Z-A rather than A-Z.
-        If the user wishes to reverse it, they are able to use list.reverse()
-        Defaults to sort by number of cases.
-        """
-        if sort not in ["cases", "deaths", "recovered", "alphabetical", "country",
-                        "todayCases", "todayDeaths", "casesPerOneMillion", "active"]:
-            raise BadSortParameter('Sort parameter must be one of: cases, deaths, recovered, alphabetical,\
-country, todayCases, todayDeaths, casesPerOneMillion or active')
-        
-        endpoint = SORTED_COUNTRIES.format(self.api_url, sort)
-        data = await self.request_client.make_request(endpoint)
-
-        sorted_data = []
-
-        for country in data:
-            c = self._compile_country_data(country)
-            sorted_data.append(c)
-        
-        return sorted_data
-
     
     async def get_jhu_csse_data(self):
         """
@@ -358,41 +410,60 @@ country, todayCases, todayDeaths, casesPerOneMillion or active')
         return stat
 
     
-    async def _request_yesterday(self):
-        endpoint = YESTERDAY.format(self.api_url)
-        yesterday_data = await self.request_client.make_request(endpoint)
-
-        return yesterday_data
-
-
-    async def yesterday_all(self):
+    async def get_all_continents(self, **kwargs):
         """
-        Get yesterday's country data.
-        This returns the exact same data as get_all_countries,
-        except the stats are for yesterday.
+        Get the statistics for world continents.
         """
-        yesterday_data = await self._request_yesterday()
+        get_yesterday = kwargs.get('yesterday')
+        sort = kwargs.get('sort')
 
-        list_of_countries = []
+        if get_yesterday:
+            self.check_yesterday(get_yesterday)
 
-        for c in yesterday_data:
-            list_of_countries.append(self._compile_country_data(c))
+        if sort:
+            self.check_sort(sort)
 
-        return list_of_countries
+        if sort and get_yesterday:
+            endpoint = ALL_CONTINENTS_YESTERDAY_SORTED.format(self.api_url)
 
-    
-    async def yesterday_country(self, country):
-        """
-        Get yesterday's stats for a specific country.
-        This returns the same data as get_country_data,
-        except the stats are for yesterday.
-        """
-        yesterday_data = await self._request_yesterday()
+        elif sort:
+            endpoint = ALL_CONTINENTS_SORTED(self.api_url, sort)
 
-        country_info = next(c for c in yesterday_data if c["country"].lower() == country.lower() \
-            or str(c["countryInfo"].get("iso2")).lower() == country.lower() \
-            or str(c["countryInfo"].get("iso3")).lower() == country.lower())
+        elif get_yesterday:
+            endpoint = ALL_CONTINENTS_YESTERDAY.format(self.api_url)
+        
+        else:
+            endpoint = ALL_CONTINENTS.format(self.api_url)
 
-        country_yesterday = self._compile_country_data(country_info)
+        data = self.request_client.make_request(endpoint)
 
-        return country_yesterday
+        name = data.get('continent')
+        cases = data.get("cases", 0)
+        deaths = data.get("deaths", 0)
+        recoveries = data.get("recovered", 0)
+        today_cases = data.get("todayCases", 0)
+        today_deaths = data.get("todayDeaths", 0)
+        total_critical = data.get("critical", 0)
+        updated_epoch = data.get("updated", 0)
+        active = data.get("active", cases-deaths-recoveries)
+        tests = data.get("tests", 0)
+        cases_per_million = data.get("casesPerOneMillion", 0)
+        deaths_per_million = data.get("deathsPerOneMillion", 0)
+        tests_per_million = data.get("testsPerOneMillion", 0)
+        updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
+
+        return ContinentStatistics(
+            name,
+            cases,
+            deaths,
+            recoveries,
+            critical,
+            active,
+            tests,
+            today_cases,
+            today_deaths,
+            cases_per_million,
+            deaths_per_million,
+            tests_per_million,
+            updated
+        )
