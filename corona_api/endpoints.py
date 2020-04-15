@@ -2,7 +2,7 @@ SORT_SUFFIX = '?sort={}'
 YESTERDAY_SUFFIX = '?yesterday=true'
 YESTERDAY_SORTED = '?yesterday=true&sort={}'
 
-GLOBAL_DATA = '{}v2/all'
+GLOBAL_DATA = '{}/v2/all'
 GLOBAL_YESTERDAY = GLOBAL_DATA + YESTERDAY_SUFFIX
 
 ALL_COUNTRIES = '{}/v2/countries'
