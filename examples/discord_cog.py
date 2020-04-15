@@ -111,7 +111,7 @@ class Coronavirus(commands.Cog):
             generate_all_embed(embed, data)
 
         elif isinstance(data, corona_api.CountryStatistics):
-            yesterdays_data = await self.corona.yesterday_country(country)
+            yesterdays_data = await self.corona.get_country_data(country, yesterday=True)
             generate_country_embed(embed, data, yesterdays_data)
 
         elif isinstance(data, corona_api.StateStatistics):
@@ -174,7 +174,7 @@ class Coronavirus(commands.Cog):
 
     @commands.command(name="coronavirusleaderboard", aliases=["cvlb", "coronaleaderboard", "coronatop", "cvtop"])
     async def coronavirus_leaderboard(self, ctx):
-        data = await self.corona.get_sorted_data("cases")
+        data = await self.corona.get_all_countries(sort="cases")
 
         embed = discord.Embed(title="Top 15 cases", description="", color=65280)
         embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')

@@ -466,9 +466,14 @@ class Client:
         else:
             endpoint = ALL_CONTINENTS.format(self.api_url)
 
-        data = self.request_client.make_request(endpoint)
+        data = await self.request_client.make_request(endpoint)
 
-        return self._compile_continent(data)
+        continents = []
+
+        for c in data:
+            continents.append(self._compile_continent(c))
+
+        return continents
 
 
     async def get_single_continent(self, continent, **kwargs):
@@ -483,7 +488,7 @@ class Client:
         else:
             endpoint = CONTINENT_DATA.format(self.api_url)
 
-        data = self.request_client.make_request(endpoint)
+        data = await self.request_client.make_request(endpoint)
 
         return self._compile_continent(data)
 
