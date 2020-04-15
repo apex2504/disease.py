@@ -233,9 +233,9 @@ class Client:
 
         if get_yesterday:
             self._check_yesterday(get_yesterday)
-            endpoint = COUNTRY_DATA_YESTERDAY.format(self.api_url)
+            endpoint = COUNTRY_DATA_YESTERDAY.format(self.api_url, country)
         else:
-            endpoint = COUNTRY_DATA.format(self.api_url)
+            endpoint = COUNTRY_DATA.format(self.api_url, country)
 
         country_stats = await self.request_client.make_request(endpoint)
 
@@ -324,7 +324,6 @@ class Client:
         else:
             endpoint = SINGLE_STATE.format(self.api_url, state)
 
-        endpoint = SINGLE_STATE.format(self.api_url, state)
         state_info = await self.request_client.make_request(endpoint)
 
         compiled_state = self._compile_state(state_info)
