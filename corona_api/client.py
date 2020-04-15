@@ -257,7 +257,7 @@ class Client:
 
         elif sort:
             self._check_sort(sort)
-            endpoint = ALL_COUNTRIES_SORTED(self.api_url, sort)
+            endpoint = ALL_COUNTRIES_SORTED.format(self.api_url, sort)
 
         elif get_yesterday:
             self._check_yesterday(get_yesterday)
@@ -293,7 +293,7 @@ class Client:
             endpoint = ALL_STATES_YESTERDAY_SORTED.format(self.api_url, sort)
 
         elif sort:
-            endpoint = ALL_STATES_SORTED(self.api_url, sort)
+            endpoint = ALL_STATES_SORTED.format(self.api_url, sort)
 
         elif get_yesterday:
             endpoint = ALL_STATES_YESTERDAY.format(self.api_url)
@@ -458,7 +458,7 @@ class Client:
             endpoint = ALL_CONTINENTS_YESTERDAY_SORTED.format(self.api_url, sort)
 
         elif sort:
-            endpoint = ALL_CONTINENTS_SORTED(self.api_url, sort)
+            endpoint = ALL_CONTINENTS_SORTED.format(self.api_url, sort)
 
         elif get_yesterday:
             endpoint = ALL_CONTINENTS_YESTERDAY.format(self.api_url)
