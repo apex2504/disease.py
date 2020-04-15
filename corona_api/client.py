@@ -320,10 +320,10 @@ class Client:
 
         if get_yesterday:
             self._check_yesterday(get_yesterday)
-            endpoint = SINGLE_STATE_YESTERDAY.format(self.api_url)
+            endpoint = SINGLE_STATE_YESTERDAY.format(self.api_url, state)
 
         else:
-            endpoint = SINGLE_STATE.format(self.api_url)
+            endpoint = SINGLE_STATE.format(self.api_url, state)
 
         endpoint = SINGLE_STATE.format(self.api_url, state)
         state_info = await self.request_client.make_request(endpoint)
