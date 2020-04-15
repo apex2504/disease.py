@@ -69,7 +69,7 @@ class HistoricalStatistics:
         self.case_history = case_history
         self.death_history = death_history
         self.recovery_history = recovery_history
-        self.province = province or 'None'
+        self.province = province or None
 
     
 class JhuCsseStatistics:

@@ -84,6 +84,30 @@ class Client:
         )
 
 
+    def _compile_state(self, state_dict):
+        state_name = state_dict.get("state")
+        total_state_cases = state_dict.get("cases", 0)
+        total_state_deaths = state_dict.get("deaths", 0)
+        today_cases = state_dict.get("todayCases", 0)
+        today_deaths = state_dict.get("todayDeaths", 0)
+        active = state_dict.get("active", 0)
+        tests = state_dict.get("tests", 0)
+        tests_per_million = state_dict.get("testsPerOneMillion", 0)
+
+        state_stats = StateStatistics(
+        state_name,
+        total_state_cases,
+        total_state_deaths,
+        today_cases,
+        today_deaths,
+        active,
+        tests,
+        tests_per_million
+        )
+
+        return state_stats
+
+    
     def _generate_history(self, historical_stats, is_county=False):
         case_history = []
         death_history = []
@@ -205,10 +229,10 @@ class Client:
         """
         Get the data for a specific country.
         """
-        get_yesterday = kwargs.get('yesterday', False)
-        self._check_yesterday(get_yesterday)
+        get_yesterday = kwargs.get('yesterday')
 
         if get_yesterday:
+            self._check_yesterday(get_yesterday)
             endpoint = GLOBAL_YESTERDAY.format(self.api_url)
         else:
             endpoint = GLOBAL_DATA.format(self.api_url)
@@ -226,19 +250,17 @@ class Client:
         get_yesterday = kwargs.get('yesterday')
         sort = kwargs.get('sort')
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
-
-        if sort:
-            self._check_sort(sort)
-
         if sort and get_yesterday:
-            endpoint = ALL_COUNTRIES_YESTERDAY_SORTED.format(self.api_url)
+            self._check_yesterday(get_yesterday)
+            self._check_sort(sort)
+            endpoint = ALL_COUNTRIES_YESTERDAY_SORTED.format(self.api_url, sort)
 
         elif sort:
+            self._check_sort(sort)
             endpoint = ALL_COUNTRIES_SORTED(self.api_url, sort)
 
         elif get_yesterday:
+            self._check_yesterday(get_yesterday)
             endpoint = ALL_COUNTRIES_YESTERDAY.format(self.api_url)
         
         else:
@@ -252,30 +274,6 @@ class Client:
             list_of_countries.append(self._compile_country_data(c))
 
         return list_of_countries
-
-
-    def _compile_state(self, state_dict):
-        state_name = state_dict.get("state")
-        total_state_cases = state_dict.get("cases", 0)
-        total_state_deaths = state_dict.get("deaths", 0)
-        today_cases = state_dict.get("todayCases", 0)
-        today_deaths = state_dict.get("todayDeaths", 0)
-        active = state_dict.get("active", 0)
-        tests = state_dict.get("tests", 0)
-        tests_per_million = state_dict.get("testsPerOneMillion", 0)
-
-        state_stats = StateStatistics(
-        state_name,
-        total_state_cases,
-        total_state_deaths,
-        today_cases,
-        today_deaths,
-        active,
-        tests,
-        tests_per_million
-        )
-
-        return state_stats
     
     
     async def get_all_states(self, **kwargs):
@@ -292,7 +290,7 @@ class Client:
             self._check_sort(sort)
 
         if sort and get_yesterday:
-            endpoint = ALL_STATES_YESTERDAY_SORTED.format(self.api_url)
+            endpoint = ALL_STATES_YESTERDAY_SORTED.format(self.api_url, sort)
 
         elif sort:
             endpoint = ALL_STATES_SORTED(self.api_url, sort)
@@ -457,7 +455,7 @@ class Client:
             self._check_sort(sort)
 
         if sort and get_yesterday:
-            endpoint = ALL_CONTINENTS_YESTERDAY_SORTED.format(self.api_url)
+            endpoint = ALL_CONTINENTS_YESTERDAY_SORTED.format(self.api_url, sort)
 
         elif sort:
             endpoint = ALL_CONTINENTS_SORTED(self.api_url, sort)
@@ -481,7 +479,7 @@ class Client:
 
         if get_yesterday:
             self._check_yesterday(get_yesterday)
-            endpoint = CONTINENT_YESTERDAY.format(self.api_url. continent)
+            endpoint = CONTINENT_YESTERDAY.format(self.api_url, continent)
         else:
             endpoint = CONTINENT_DATA.format(self.api_url)
 
