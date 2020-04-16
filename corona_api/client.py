@@ -111,7 +111,7 @@ class Client:
     def _generate_history(self, historical_stats, is_county=False):
         case_history = []
         death_history = []
-        recovery_history = []
+        recovery_history = [] if not is_county else None
 
         if not is_county:        
             country_name = historical_stats.get("country", "Global")
@@ -127,8 +127,6 @@ class Client:
         
         else:
             d = historical_stats["timeline"]
-
-        recovery_history = None #state counties dont provide recovered data
 
         for date in list(d["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
             case_history.append(HistoryEntry(date, d["cases"][date]))
