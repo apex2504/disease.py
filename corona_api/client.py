@@ -179,37 +179,21 @@ class Client:
 
 
     def _compile_state_list(self, data):
-        if isinstance(data, list) and len(data) != 1:
-            dates = []
+        dates = []
 
-            for d in data:
-                state = self._compile_nyt_state(d)
-                dates.append(state)
-            
-            return dates
-
-        if isinstance(data, list) and len(data) == 1:
-            data = data[0]
-        
-        dates = self._compile_nyt_state(data)
+        for d in data:
+            state = self._compile_nyt_state(d)
+            dates.append(state)
         
         return dates
 
 
     def _compile_county_list(self, data):
-        if isinstance(data, list) and len(data) != 1:
-            dates = []
+        dates = []
 
-            for d in data:
-                county = self._compile_nyt_county(d)
-                dates.append(county)
-            
-            return dates
-
-        if isinstance(data, list) and len(data) == 1:
-            data = data[0]
-        
-        dates = self._compile_nyt_county(data)
+        for d in data:
+            county = self._compile_nyt_county(d)
+            dates.append(county)
         
         return dates
     
