@@ -145,6 +145,7 @@ class Client:
 
     def _compile_continent(self, data):
         name = data.get('continent')
+        countries = data.get('countries')
         cases = data.get("cases", 0)
         deaths = data.get("deaths", 0)
         recoveries = data.get("recovered", 0)
@@ -161,6 +162,7 @@ class Client:
 
         return ContinentStatistics(
             name,
+            countries,
             cases,
             deaths,
             recoveries,
@@ -176,6 +178,76 @@ class Client:
         )    
 
 
+    def _compile_state_list(self, data):
+        if isinstance(data, list) and len(data) != 1:
+            dates = []
+
+            for d in data:
+                state = self._compile_nyt_state(d)
+                dates.append(state)
+            
+            return dates
+
+        if isinstance(data, list) and len(data) == 1:
+            data = data[0]
+        
+        dates = self._compile_nyt_state(data)
+        
+        return dates
+
+
+    def _compile_county_list(self, data):
+        if isinstance(data, list) and len(data) != 1:
+            dates = []
+
+            for d in data:
+                county = self._compile_nyt_county(d)
+                dates.append(county)
+            
+            return dates
+
+        if isinstance(data, list) and len(data) == 1:
+            data = data[0]
+        
+        dates = self._compile_nyt_county(data)
+        
+        return dates
+    
+    
+    def _compile_nyt_state(self, data):
+        date = data.get('date')
+        state = data.get('state')
+        fips = data.get('fips')
+        cases = data.get('cases')
+        deaths = data.get('deaths')
+
+        return NewYorkTimesStateStatistics(
+            date,
+            state,
+            fips,
+            cases,
+            deaths
+        )
+
+
+    def _compile_nyt_county(self, data):
+        date = data.get('date')
+        county = data.get('county')
+        state = data.get('state')
+        fips = data.get('fips')
+        cases = data.get('cases')
+        deaths = data.get('deaths')
+
+        return NewYorkTimesCountyStatistics(
+            date,
+            county,
+            state,
+            fips,
+            cases,
+            deaths
+        )
+    
+    
     async def all(self, **kwargs):
         """
         Get the global stats for Coronavirus COVID-19
@@ -488,4 +560,75 @@ class Client:
 
         return self._compile_continent(data)
 
-        
+
+    async def get_nyt_usa_data(self):
+        """
+        Get historical data for the US from the New York Times
+        """
+        endpoint = NYT_USA.format(self.api_url)
+        data = await self.request_client.make_request(endpoint)
+
+        dates = []        
+
+        for d in data:
+            date = d.get('date')
+            cases = d.get('cases')
+            deaths = d.get('deaths')
+
+            dates.append(
+                NewYorkTimesUsaStatistics(
+                    date,
+                    cases,
+                    deaths
+                )
+            )
+
+        return dates
+
+
+    async def get_nyt_all_states(self):
+        """
+        Get the data for all states from New York Times
+        """
+        endpoint = NYT_ALL_STATES.format(self.api_url)
+        data = await self.request_client.make_request(endpoint)
+
+        states_list = self._compile_state_list(data)
+
+        return states_list
+
+
+    async def get_nyt_single_state(self, state):
+        """
+        Get the data for a single state from New York Times
+        """
+        endpoint = NYT_SINGLE_STATE.format(self.api_url, state)
+        data = await self.request_client.make_request(endpoint)
+
+        state_data = self._compile_state_list(data)
+
+        return state_data
+
+    
+    async def get_nyt_all_counties(self):
+        """
+        Get the data for all counties within all US states from NYT
+        """
+        endpoint = NYT_ALL_COUNTIES.format(self.api_url)
+        data = await self.request_client.make_request(endpoint)
+
+        county_list = self._compile_county_list(data)
+
+        return county_list
+
+
+    async def get_nyt_single_county(self, county):
+        """
+        Get the data for all counties within all US states from NYT
+        """
+        endpoint = NYT_SINGLE_COUNTY.format(self.api_url, county)
+        data = await self.request_client.make_request(endpoint)
+
+        county_data = self._compile_county_list(data)
+
+        return county_data

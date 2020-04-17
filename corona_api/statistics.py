@@ -86,9 +86,10 @@ class JhuCsseStatistics:
 
 
 class ContinentStatistics:
-    def __init__(self, name, cases, deaths, recoveries, critical, active, tests, today_cases,
+    def __init__(self, name, countries, cases, deaths, recoveries, critical, active, tests, today_cases,
                  today_deaths, cases_per_million, deaths_per_million, tests_per_million, updated):
         self.name = name
+        self.countries = countries
         self.cases = cases
         self.deaths = deaths
         self.recoveries = recoveries
@@ -101,3 +102,30 @@ class ContinentStatistics:
         self.deaths_per_million = deaths_per_million
         self.tests_per_million = tests_per_million
         self.updated = updated
+
+
+#api gives fips, cases and deaths from NYT as strings, hence the conversion to int in the below classes
+class NewYorkTimesUsaStatistics:
+    def __init__(self, date, cases, deaths):
+        self.date = date
+        self.cases = int(cases) if cases else None
+        self.deaths = int(deaths) if deaths else None
+
+
+class NewYorkTimesStateStatistics:
+    def __init__(self, date, state, fips, cases, deaths):
+        self.date = date
+        self.state = state
+        self.fips = int(fips) if fips else None
+        self.cases = int(cases) if cases else None
+        self.deaths = int(deaths) if deaths else None
+
+
+class NewYorkTimesCountyStatistics:
+    def __init__(self, date, county, state, fips, cases, deaths):
+        self.date = date
+        self.county = county
+        self.state = state
+        self.fips = int(fips) if fips else None
+        self.cases = int(cases) if cases else None
+        self.deaths = int(deaths) if deaths else None

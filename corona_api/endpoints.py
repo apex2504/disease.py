@@ -35,3 +35,9 @@ CONTINENT_YESTERDAY = CONTINENT_DATA + _YESTERDAY_SUFFIX
 
 JHU_CSSE = '{}/v2/jhucsse'
 JHU_CSSE_COUNTIES = '{}/v2/jhucsse/counties/{}'
+
+NYT_USA = '{}/v2/nyt/usa'
+NYT_ALL_STATES = '{}/v2/nyt/states'
+NYT_SINGLE_STATE = '{}/v2/nyt/states/{}'
+NYT_ALL_COUNTIES = '{}/v2/nyt/counties'
+NYT_SINGLE_COUNTY = '{}/v2/nyt/counties/{}'
