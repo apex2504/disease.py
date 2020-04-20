@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from .request import RequestClient
 from .statistics import *
-from .exceptions import BadSortParameter, BadYesterdayParameter
+from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter
 from .endpoints import *
 
 
@@ -59,6 +59,7 @@ class Client:
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
         deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
         tests_per_million = country_stats.get("testsPerOneMillion", 0)
+        continent = country_stats.get("continent", None)
         updated_epoch = country_stats.get("updated", 0)
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
@@ -80,6 +81,7 @@ class Client:
             cases_per_million,
             deaths_per_million,
             tests_per_million,
+            continent,
             updated
         )
 
@@ -295,6 +297,34 @@ class Client:
 
         return self._compile_country_data(country_stats)
 
+
+    async def get_country_list(self, *countries, **kwargs):
+        """
+        Get the data for more than one country, but not necessarily all of them.
+        """
+        get_yesterday = kwargs.get('yesterday')
+        country_list = ','.join(map(str, countries))
+
+        if get_yesterday:
+            self._check_yesterday(get_yesterday)
+            endpoint = COUNTRY_DATA_YESTERDAY.format(self.api_url, country_list)
+        
+        else:
+            endpoint = COUNTRY_DATA.format(self.api_url, country_list)
+            
+        data = await self.request_client.make_request(endpoint)
+
+        if isinstance(data, dict):
+            return self._compile_country_data(data)
+        
+        returned_countries = []
+
+        for country in data:
+            returned_countries.append(
+                self._compile_country_data(country)
+            )
+        return returned_countries
+
     
     async def get_all_countries(self, **kwargs):
         """
@@ -412,9 +442,12 @@ class Client:
         """
         endpoint = STATE_COUNTY.format(self.api_url, state, last_days)
         data = await self.request_client.make_request(endpoint)
-
-        matching_county = next(place for place in data if place["province"].lower() == state.lower() \
+        
+        try:
+            matching_county = next(place for place in data if place["province"].lower() == state.lower() \
             and place["county"].lower() == county.lower())
+        except StopIteration:
+            raise NotFound('Nothing found for specified county.')
 
         return self._generate_history(matching_county, True)
 
@@ -464,8 +497,11 @@ class Client:
         endpoint = JHU_CSSE_COUNTIES.format(self.api_url, county)
         all_matching_counties = await self.request_client.make_request(endpoint)
 
-        matching_county = next(place for place in all_matching_counties if place["province"].lower() == state.lower() \
+        try:
+            matching_county = next(place for place in all_matching_counties if place["province"].lower() == state.lower() \
             and place["county"].lower() == county.lower())
+        except StopIteration:
+            raise NotFound('Nothing found for specified county.')
 
         country = matching_county.get("country") #will always be 'US'
         province = matching_county.get("province")
