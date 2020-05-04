@@ -6,7 +6,7 @@ with open('README.md', 'r') as f:
 setup(
   name = 'corona_api',
   packages = ['corona_api'],
-  version = '0.8.0',
+  version = '0.8.1',
   license='MIT',
   description = 'An asynchronous wrapper for the corona.lmao.ninja API written in Python.',
   long_description= long_desc,

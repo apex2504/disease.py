@@ -1,7 +1,7 @@
 import aiohttp
 from .exceptions import NotFound, APIError
 
-ver = "0.8.0"
+ver = "0.8.1"
 
 class RequestClient:
     def __init__(self):

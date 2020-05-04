@@ -208,6 +208,9 @@ class Client:
         cases = data.get('cases')
         deaths = data.get('deaths')
 
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d")
+
         return NewYorkTimesStateStatistics(
             date,
             state,
@@ -224,6 +227,9 @@ class Client:
         fips = data.get('fips')
         cases = data.get('cases')
         deaths = data.get('deaths')
+
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d")
 
         return NewYorkTimesCountyStatistics(
             date,
@@ -616,6 +622,9 @@ class Client:
             date = d.get('date')
             cases = d.get('cases')
             deaths = d.get('deaths')
+
+            if date:
+                date = datetime.strptime(date, "%Y-%m-%d")
 
             dates.append(
                 NewYorkTimesUsaStatistics(
