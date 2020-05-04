@@ -130,3 +130,25 @@ class NewYorkTimesCountyStatistics:
         self.fips = int(fips) if fips else None
         self.cases = int(cases) if cases else None
         self.deaths = int(deaths) if deaths else None
+
+
+class AppleSubregions:
+    def __init__(self, country, subregions):
+        self.country = country
+        self.subregions = subregions
+
+
+class AppleSubregionStatistics:
+    def __init__(self, subregion, statistics):
+        self.subregion = subregion
+        self.statistics = statistics
+
+
+class AppleMobilityData:
+    def __init__(self, name, _type, date, driving, transit, walking):
+        self.name = name
+        self.type = _type
+        self.date = date
+        self.driving = driving
+        self.transit = transit
+        self.walking = walking

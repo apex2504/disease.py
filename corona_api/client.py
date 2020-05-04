@@ -9,7 +9,7 @@ class Client:
     """
     Handles interactions with the corona.lmao.ninja API
     """
-    def __init__(self, api_url='https://corona.lmao.ninja'):
+    def __init__(self, api_url='https://corona.lmao.ninja/v2'):
         self.api_url = api_url
         self.request_client = RequestClient()
 
@@ -131,8 +131,9 @@ class Client:
             d = historical_stats["timeline"]
 
         for date in list(d["cases"].keys()): #pass on all historical data. let the client decide how much of it they want
-            case_history.append(HistoryEntry(date, d["cases"][date]))
-            death_history.append(HistoryEntry(date, d["deaths"][date]))
+            _d = datetime.strptime(date, "%m/%d/%y")
+            case_history.append(HistoryEntry(_d, d["cases"][date]))
+            death_history.append(HistoryEntry(_d, d["deaths"][date]))
             if not is_county:
                 recovery_history.append(HistoryEntry(date, d["recovered"][date]))
 
@@ -231,6 +232,27 @@ class Client:
             fips,
             cases,
             deaths
+        )
+
+
+    def _compile_apple_stats(self, data):
+        name = data.get("subregion_and_city")
+        _type = data.get("get_type")
+        date = data.get("date")
+        driving = data.get("driving")
+        transit = data.get("transit")
+        walking = data.get("walking")
+
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d")
+
+        return AppleMobilityData(
+            name,
+            _type,
+            date,
+            driving,
+            transit,
+            walking
         )
     
     
@@ -652,3 +674,46 @@ class Client:
         county_data = self._compile_county_list(data)
 
         return county_data
+
+
+    async def apple_all_countries(self):
+        """
+        Get the list of countries supported by Apple's mobility data set
+        """
+        endpoint = APPLE_COUNTRIES.format(self.api_url)
+        data = await self.request_client.make_request(endpoint)
+
+        return data
+
+
+    async def apple_subregions(self, country):
+        """
+        Get the list of supported subregions for a country within Apple's mobility data set
+        """
+        endpoint = APPLE_SUBREGIONS.format(self.api_url, country)
+        data = await self.request_client.make_request(endpoint)
+
+        return AppleSubregions(
+            data.get("country"),
+            data.get("subregions")
+        )
+
+    
+    async def apple_mobility_data(self, country, subregion):
+        """
+        Get the statistics for the specified subregion
+        """
+        endpoint = APPLE_SINGLE_SUBREGION.format(self.api_url, country, subregion)
+        data = await self.request_client.make_request(endpoint)
+
+        subregion_string = data.get("subregion")
+
+        statistics = []
+
+        for stats in data["data"]:
+            statistics.append(self._compile_apple_stats(stats))
+
+        return AppleSubregionStatistics(
+            subregion_string,
+            statistics
+        )
