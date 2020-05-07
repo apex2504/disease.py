@@ -145,6 +145,33 @@ class Client:
             province_name
             )
 
+    
+    def _compile_jhu_data(self, matching_county):
+        country = matching_county.get("country") #will always be 'US'
+        province = matching_county.get("province")
+        county_name = matching_county.get("province")
+        confirmed_cases = matching_county["stats"].get("confirmed")
+        deaths = matching_county["stats"].get("deaths")
+        recoveries = matching_county["stats"].get("recovered")
+        _lat = float(matching_county["coordinates"].get("latitude")) if matching_county["coordinates"].get("latitude") else 0.0
+        _long = float(matching_county["coordinates"].get("longitude")) if matching_county["coordinates"].get("longitude") else 0.0
+
+        updated = datetime.strptime(matching_county.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
+
+        stat = JhuCsseStatistics(
+                country,
+                province,
+                county_name,
+                updated,
+                confirmed_cases,
+                deaths,
+                recoveries,
+                _lat,
+                _long
+                )
+
+        return stat
+
 
     def _compile_continent(self, data):
         name = data.get('continent')
@@ -266,16 +293,17 @@ class Client:
         """
         Get the global stats for Coronavirus COVID-19
         """
-        get_yesterday = kwargs.get('yesterday', False)
+        yesterday = kwargs.get('yesterday', False)
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
-            global_endpoint = GLOBAL_YESTERDAY.format(self.api_url)
+        endpoint = GLOBAL_DATA.format(self.api_url)
+        params = None
 
-        else:
-            global_endpoint = GLOBAL_DATA.format(self.api_url)
+        if yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
 
-        global_data = await self.request_client.make_request(global_endpoint)
+        global_data = await self.request_client.make_request(endpoint, params)
 
         cases = global_data.get("cases", 0)
         deaths = global_data.get("deaths", 0)
@@ -313,15 +341,17 @@ class Client:
         """
         Get the data for a specific country.
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday', False)
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
-            endpoint = COUNTRY_DATA_YESTERDAY.format(self.api_url, country)
-        else:
-            endpoint = COUNTRY_DATA.format(self.api_url, country)
+        endpoint = COUNTRY_DATA.format(self.api_url, country)
+        params = None
 
-        country_stats = await self.request_client.make_request(endpoint)
+        if yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
+
+        country_stats = await self.request_client.make_request(endpoint, params)
 
         return self._compile_country_data(country_stats)
 
@@ -330,17 +360,18 @@ class Client:
         """
         Get the data for more than one country, but not necessarily all of them.
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday', False)
         country_list = ','.join(map(str, countries))
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
-            endpoint = COUNTRY_DATA_YESTERDAY.format(self.api_url, country_list)
-        
-        else:
-            endpoint = COUNTRY_DATA.format(self.api_url, country_list)
+        endpoint = COUNTRY_DATA.format(self.api_url, country_list)
+        params = None
+
+        if yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
             
-        data = await self.request_client.make_request(endpoint)
+        data = await self.request_client.make_request(endpoint, params)
 
         if isinstance(data, dict):
             return self._compile_country_data(data)
@@ -358,26 +389,28 @@ class Client:
         """
         Get the data for every infected country.
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday')
         sort = kwargs.get('sort')
 
-        if sort and get_yesterday:
-            self._check_yesterday(get_yesterday)
+        endpoint = ALL_COUNTRIES.format(self.api_url)
+        params = None
+
+        if sort and yesterday:
+            self._check_yesterday(yesterday)
             self._check_sort(sort)
-            endpoint = ALL_COUNTRIES_YESTERDAY_SORTED.format(self.api_url, sort)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday, "sort": sort}
 
         elif sort:
             self._check_sort(sort)
-            endpoint = ALL_COUNTRIES_SORTED.format(self.api_url, sort)
+            params = {"sort": sort}
 
-        elif get_yesterday:
-            self._check_yesterday(get_yesterday)
-            endpoint = ALL_COUNTRIES_YESTERDAY.format(self.api_url)
-        
-        else:
-            endpoint = ALL_COUNTRIES.format(self.api_url)
+        elif yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
             
-        all_countries = await self.request_client.make_request(endpoint)
+        all_countries = await self.request_client.make_request(endpoint, params)
 
         list_of_countries = []
 
@@ -391,28 +424,26 @@ class Client:
         """
         Get the stats for all US states
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday')
         sort = kwargs.get('sort')
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
+        endpoint = ALL_STATES.format(self.api_url)
+        params = None
 
-        if sort:
+        if sort and yesterday:
             self._check_sort(sort)
-
-        if sort and get_yesterday:
-            endpoint = ALL_STATES_YESTERDAY_SORTED.format(self.api_url, sort)
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday, "sort": sort}
 
         elif sort:
-            endpoint = ALL_STATES_SORTED.format(self.api_url, sort)
+            params = {"sort": sort}
 
-        elif get_yesterday:
-            endpoint = ALL_STATES_YESTERDAY.format(self.api_url)
-        
-        else:
-            endpoint = ALL_STATES.format(self.api_url)
+        elif yesterday:
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
 
-        state_info = await self.request_client.make_request(endpoint)
+        state_info = await self.request_client.make_request(endpoint, params)
 
         state_data = []
 
@@ -427,29 +458,32 @@ class Client:
         """
         Get the stats for a specific province of a country
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday')
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
-            endpoint = SINGLE_STATE_YESTERDAY.format(self.api_url, state)
+        endpoint = SINGLE_STATE.format(self.api_url, state)
+        params = None
 
-        else:
-            endpoint = SINGLE_STATE.format(self.api_url, state)
+        if yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
 
-        state_info = await self.request_client.make_request(endpoint)
+        state_info = await self.request_client.make_request(endpoint, params)
 
         compiled_state = self._compile_state(state_info)
 
         return compiled_state
 
 
-    async def get_country_history(self, country="all", last_days='all'):
+    async def get_country_history(self, country='all', last_days='all'):
         """
         Get historical data for a specific country or globally.
         Defaults to 'all' in order to get global data. This can be overridden by the client.
         """
-        endpoint = HISTORICAL_COUNTRY.format(self.api_url, country, last_days)
-        historical_stats = await self.request_client.make_request(endpoint)
+        endpoint = HISTORICAL_COUNTRY.format(self.api_url, country)
+        params = {"lastdays": last_days}
+
+        historical_stats = await self.request_client.make_request(endpoint, params)
 
         return self._generate_history(historical_stats)
 
@@ -458,8 +492,10 @@ class Client:
         """
         Get the historical data for a province within a country.
         """
-        endpoint = HISTORICAL_PROVINCE.format(self.api_url, country, province, last_days)
-        data = await self.request_client.make_request(endpoint)
+        endpoint = HISTORICAL_PROVINCE.format(self.api_url, country, province)
+        params = {"lastdays": last_days}
+
+        data = await self.request_client.make_request(endpoint, params)
 
         return self._generate_history(data)
 
@@ -468,8 +504,10 @@ class Client:
         """
         Get the historical data for a county within a US state.
         """
-        endpoint = STATE_COUNTY.format(self.api_url, state, last_days)
-        data = await self.request_client.make_request(endpoint)
+        endpoint = STATE_COUNTY.format(self.api_url, state)
+        params = {"lastdays": last_days}
+
+        data = await self.request_client.make_request(endpoint, params)
         
         try:
             matching_county = next(place for place in data if place["province"].lower() == state.lower() \
@@ -491,29 +529,7 @@ class Client:
         statistics = []
 
         for cp in data:
-            country = cp.get("country")
-            province = cp.get("province")
-            confirmed_cases = cp["stats"].get("confirmed")
-            deaths = cp["stats"].get("deaths")
-            recoveries = cp["stats"].get("recovered")
-            _lat = float(cp["coordinates"].get("latitude")) if cp["coordinates"].get("latitude") else 0.0
-            _long = float(cp["coordinates"].get("longitude")) if cp["coordinates"].get("longitude") else 0.0
-
-            updated = datetime.strptime(cp.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
-
-            jhu_statistic = JhuCsseStatistics(
-                country,
-                province,
-                None,
-                updated,
-                confirmed_cases,
-                deaths,
-                recoveries,
-                _lat,
-                _long
-                )
-            
-            statistics.append(jhu_statistic)
+            statistics.append(self._compile_jhu_data(cp))
 
         return statistics
 
@@ -522,7 +538,8 @@ class Client:
         """
         Get the data for a specific county within a US state.
         """
-        endpoint = JHU_CSSE_COUNTIES.format(self.api_url, county)
+        endpoint = JHU_SINGLE_COUNTY.format(self.api_url, county)
+
         all_matching_counties = await self.request_client.make_request(endpoint)
 
         try:
@@ -531,58 +548,50 @@ class Client:
         except StopIteration:
             raise NotFound('Nothing found for specified county.')
 
-        country = matching_county.get("country") #will always be 'US'
-        province = matching_county.get("province")
-        county_name = matching_county.get("province")
-        confirmed_cases = matching_county["stats"].get("confirmed")
-        deaths = matching_county["stats"].get("deaths")
-        recoveries = matching_county["stats"].get("recovered")
-        _lat = float(matching_county["coordinates"].get("latitude")) if matching_county["coordinates"].get("latitude") else 0.0
-        _long = float(matching_county["coordinates"].get("longitude")) if matching_county["coordinates"].get("longitude") else 0.0
+        return self._compile_jhu_data(matching_county)
 
-        updated = datetime.strptime(matching_county.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
+    
+    async def get_jhu_all_counties(self):
+        """
+        Get the data for every single county in the US provided by JHU.
+        """
+        endpoint = JHU_ALL_COUNTIES.format(self.api_url)
 
-        stat = JhuCsseStatistics(
-                country,
-                province,
-                county_name,
-                updated,
-                confirmed_cases,
-                deaths,
-                recoveries,
-                _lat,
-                _long
-                )
+        data = await self.request_client.make_request(endpoint)
 
-        return stat
+        places = []
+
+        for place in data:
+            places.append(self._compile_jhu_data(place))
+
+        return places
 
     
     async def get_all_continents(self, **kwargs):
         """
         Get the statistics for world continents.
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday')
         sort = kwargs.get('sort')
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
+        endpoint = ALL_CONTINENTS.format(self.api_url)
+        params = None
 
-        if sort:
+        if sort and yesterday:
+            self._check_yesterday(yesterday)
             self._check_sort(sort)
-
-        if sort and get_yesterday:
-            endpoint = ALL_CONTINENTS_YESTERDAY_SORTED.format(self.api_url, sort)
+            yesterday = str(yesterday).lower()
+            params = {"sort": sort, "yesterday": yesterday}
 
         elif sort:
-            endpoint = ALL_CONTINENTS_SORTED.format(self.api_url, sort)
+            self._check_sort(sort)
+            params = {"sort": sort}
 
-        elif get_yesterday:
-            endpoint = ALL_CONTINENTS_YESTERDAY.format(self.api_url)
-        
-        else:
-            endpoint = ALL_CONTINENTS.format(self.api_url)
+        elif yesterday:
+            self._check_yesterday(yesterday)
+            params = {"yesterday": yesterday}
 
-        data = await self.request_client.make_request(endpoint)
+        data = await self.request_client.make_request(endpoint, params)
 
         continents = []
 
@@ -596,15 +605,17 @@ class Client:
         """
         Get the statistics for a single continent.
         """
-        get_yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday')
 
-        if get_yesterday:
-            self._check_yesterday(get_yesterday)
-            endpoint = CONTINENT_YESTERDAY.format(self.api_url, continent)
-        else:
-            endpoint = CONTINENT_DATA.format(self.api_url)
+        endpoint = CONTINENT_DATA.format(self.api_url)
+        params = None
 
-        data = await self.request_client.make_request(endpoint)
+        if yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
+
+        data = await self.request_client.make_request(endpoint, params)
 
         return self._compile_continent(data)
 

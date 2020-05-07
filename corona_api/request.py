@@ -1,7 +1,7 @@
 import aiohttp
 from .exceptions import NotFound, APIError
 
-ver = "0.8.1"
+ver = "0.8.2"
 
 class RequestClient:
     def __init__(self):
@@ -9,8 +9,8 @@ class RequestClient:
             "User-Agent": "apex2504/python-corona-api v{}".format(ver)
         })
 
-    async def make_request(self, endpoint):
-        async with self.session.get(endpoint) as resp:
+    async def make_request(self, endpoint, params=None):
+        async with self.session.get(endpoint, params=params) as resp:
             if resp.status == 404:
                 raise NotFound('No data available for specified country, state or province.')
             elif resp.status != 200:
