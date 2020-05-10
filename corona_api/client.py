@@ -737,3 +737,28 @@ class Client:
             subregion_string,
             statistics
         )
+
+
+    async def gov_supported_countries(self):
+        """
+        Get a list of countries supported by Governmental data
+        """
+        endpoint = GOV_ALL.format(self.api_url)
+        data = await self.request_client.make_request(endpoint)
+
+        return data
+
+
+    async def gov_country(self, country):
+        """
+        Get the data from the Government of a specified country.
+
+        The data comes from the website of the government of each country so it is difficult to produce a standardised format.
+        As a result, we cannot create a unified class for such data. Therefore, returned data will be a list of dicts.
+
+        To get a list of attributes, you can use `list(data.keys())`
+        """
+        endpoint = GOV_COUNTRY.format(self.api_url, country)
+        data = await self.request_client.make_request(endpoint)
+
+        return data

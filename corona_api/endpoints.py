@@ -26,3 +26,6 @@ NYT_SINGLE_COUNTY = '{}/nyt/counties/{}'
 APPLE_COUNTRIES = '{}/apple/countries'
 APPLE_SUBREGIONS = APPLE_COUNTRIES + '/{}'
 APPLE_SINGLE_SUBREGION = APPLE_SUBREGIONS + '/{}'
+
+GOV_ALL = '{}/gov'
+GOV_COUNTRY = GOV_ALL + '/{}'
