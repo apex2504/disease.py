@@ -7,9 +7,9 @@ from .endpoints import *
 
 class Client:
     """
-    Handles interactions with the corona.lmao.ninja API
+    Handles interactions with the NovelCOVID API
     """
-    def __init__(self, api_url='https://corona.lmao.ninja/v2'):
+    def __init__(self, api_url='https://disease.sh/v2'):
         self.api_url = api_url
         self.request_client = RequestClient()
 
@@ -149,7 +149,7 @@ class Client:
     def _compile_jhu_data(self, matching_county):
         country = matching_county.get("country") #will always be 'US'
         province = matching_county.get("province")
-        county_name = matching_county.get("province")
+        county_name = matching_county.get("county")
         confirmed_cases = matching_county["stats"].get("confirmed")
         deaths = matching_county["stats"].get("deaths")
         recoveries = matching_county["stats"].get("recovered")
@@ -473,6 +473,35 @@ class Client:
         compiled_state = self._compile_state(state_info)
 
         return compiled_state
+
+
+    async def get_state_list(self, *states, **kwargs):
+        """
+        Get the stats for more than one state
+        """
+        yesterday = kwargs.get('yesterday')
+        state_list = ','.join(map(str, states))
+
+        endpoint = SINGLE_STATE.format(self.api_url, state_list)
+        params = None
+        
+        if yesterday:
+            self._check_yesterday(yesterday)
+            yesterday = str(yesterday).lower()
+            params = {"yesterday": yesterday}
+            
+        data = await self.request_client.make_request(endpoint, params)
+
+        if isinstance(data, dict):
+            return self._compile_state(data)
+        
+        returned_states = []
+
+        for country in data:
+            returned_states.append(
+                self._compile_state(country)
+            )
+        return returned_states
 
 
     async def get_country_history(self, country='all', last_days='all'):
