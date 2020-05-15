@@ -21,7 +21,7 @@ Get support for this on Discord, either on our [official server](https://takagis
 | `sort`      	| - `get_all_countries()`<br>- `get_all_states()`<br>- `get_all_continents()`                                                                                                                                                  	| - `'cases'`<br>- `'deaths'`<br>- `'recovered'`<br>- `'active'`<br>- `'tests'`<br>- `'critical'`<br>- `'deathsPerOneMillion'`<br>- `'testsPerOneMillion'`<br>- `'todayCases'`<br>- `'todayDeaths'`<br>- `'casesPerOneMillion'`<br>- `'active'` 	|
 
 # Examples
-The following examples cover the basic usage of the library and its various features. They assume you are running Python 3.6 or above (due to the use of f-strings). However, the library is compatible with 3.5+.
+The following examples cover the basic usage of the library and its various features. 
 Note; many methods also support `yesterday=True` and `sort='sort method'` kwargs to get data from the previous day or sorted by various parameters. Refer to the table above to find out which ones do and do not.
 
 ### Discord bot
