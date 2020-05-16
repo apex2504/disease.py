@@ -145,7 +145,7 @@ class Coronavirus(commands.Cog):
         """
     
         if not country:
-            data = await self.corona.all()
+            data = await self.corona.all(allow_none=True)
 
         elif province:
             if (country.lower() == "us" or country.lower() == "usa"):
@@ -156,7 +156,7 @@ class Coronavirus(commands.Cog):
                 return await ctx.send(embed=embed)
 
         else:
-            data = await self.corona.get_country_data(country)
+            data = await self.corona.get_country_data(country, allow_none=True)
 
         embed = discord.Embed(title="Coronavirus (COVID-19) stats", color=65280)
         embed.set_footer(text="These stats are what has been officially confirmed. It is possible that real figures are different.")
@@ -167,11 +167,11 @@ class Coronavirus(commands.Cog):
             generate_all_embed(embed, data)
 
         elif isinstance(data, corona_api.CountryStatistics):
-            yesterdays_data = await self.corona.get_country_data(country, yesterday=True)
+            yesterdays_data = await self.corona.get_country_data(country, yesterday=True, allow_none=True)
             generate_country_embed(embed, data, yesterdays_data)
 
         elif isinstance(data, corona_api.StateStatistics):
-            yesterdays_data = await self.corona.get_single_state(province, yesterday=True)
+            yesterdays_data = await self.corona.get_single_state(province, yesterday=True, allow_none=True)
             generate_state_embed(embed, data, yesterdays_data)
 
         await ctx.send(embed=embed)

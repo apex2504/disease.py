@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from .request import RequestClient
 from .statistics import *
-from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter
+from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter, BadAllowNoneParameter
 from .endpoints import *
 
 
@@ -25,7 +25,12 @@ class Client:
         if not isinstance(value, bool):
             raise BadYesterdayParameter('Value for yesterday should either be True or False')
 
-    
+
+    def _check_allow_none(self, value):
+        if not isinstance(value, bool):
+            raise BadAllowNoneParameter('Value for allow_none should either be True or False')
+
+
     def _compile_countryInfo(self, countryInfo):
         _id = countryInfo.get("_id")
         iso2 = countryInfo.get("iso2")
@@ -294,14 +299,19 @@ class Client:
         Get the global stats for Coronavirus COVID-19
         """
         yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
 
         endpoint = GLOBAL_DATA.format(self.api_url)
-        params = None
 
         if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+        
+        if allow_none:
+            self._check_allow_none(allow_none)
+        
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+        params = {"yesterday": yesterday, "allowNull": allow_none}
 
         global_data = await self.request_client.make_request(endpoint, params)
 
@@ -342,14 +352,19 @@ class Client:
         Get the data for a specific country.
         """
         yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
 
         endpoint = COUNTRY_DATA.format(self.api_url, country)
-        params = None
 
         if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+        
+        if allow_none:
+            self._check_allow_none(allow_none)
+        
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+        params = {"yesterday": yesterday, "allowNull": allow_none}
 
         country_stats = await self.request_client.make_request(endpoint, params)
 
@@ -361,15 +376,20 @@ class Client:
         Get the data for more than one country, but not necessarily all of them.
         """
         yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
         country_list = ','.join(map(str, countries))
 
         endpoint = COUNTRY_DATA.format(self.api_url, country_list)
-        params = None
 
         if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+
+        if allow_none:
+            self._check_allow_none(allow_none)
+        
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+        params = {"yesterday": yesterday, "allowNull": allow_none}
             
         data = await self.request_client.make_request(endpoint, params)
 
@@ -389,26 +409,28 @@ class Client:
         """
         Get the data for every infected country.
         """
-        yesterday = kwargs.get('yesterday')
-        sort = kwargs.get('sort')
+        yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
+        sort = kwargs.get('sort', None)
 
         endpoint = ALL_COUNTRIES.format(self.api_url)
         params = None
 
-        if sort and yesterday:
+        if yesterday:
             self._check_yesterday(yesterday)
-            self._check_sort(sort)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday, "sort": sort}
 
-        elif sort:
-            self._check_sort(sort)
-            params = {"sort": sort}
+        if allow_none:
+            self._check_allow_none(allow_none)
 
-        elif yesterday:
-            self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+
+        if sort:
+            self._check_sort(sort)
+            params = {"yesterday": yesterday, "allowNull": allow_none, "sort": sort}
+        
+        else:
+            params = {"yesterday": yesterday, "allowNull": allow_none}
             
         all_countries = await self.request_client.make_request(endpoint, params)
 
@@ -600,25 +622,28 @@ class Client:
         """
         Get the statistics for world continents.
         """
-        yesterday = kwargs.get('yesterday')
-        sort = kwargs.get('sort')
+        yesterday = kwargs.get('yesterday', False)
+        sort = kwargs.get('sort', None)
+        allow_none = kwargs.get('allow_none', False)
 
         endpoint = ALL_CONTINENTS.format(self.api_url)
         params = None
 
-        if sort and yesterday:
+        if yesterday:
             self._check_yesterday(yesterday)
-            self._check_sort(sort)
-            yesterday = str(yesterday).lower()
-            params = {"sort": sort, "yesterday": yesterday}
 
-        elif sort:
-            self._check_sort(sort)
-            params = {"sort": sort}
+        if allow_none:
+            self._check_allow_none(allow_none)
 
-        elif yesterday:
-            self._check_yesterday(yesterday)
-            params = {"yesterday": yesterday}
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+
+        if sort:
+            self._check_sort(sort)
+            params = {"yesterday": yesterday, "allowNull": allow_none, "sort": sort}
+        
+        else:
+            params = {"yesterday": yesterday, "allowNull": allow_none}
 
         data = await self.request_client.make_request(endpoint, params)
 
@@ -634,15 +659,18 @@ class Client:
         """
         Get the statistics for a single continent.
         """
-        yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
 
         endpoint = CONTINENT_DATA.format(self.api_url)
         params = None
 
         if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+        params = {"yesterday": yesterday, "allowNull": allow_none}
 
         data = await self.request_client.make_request(endpoint, params)
 

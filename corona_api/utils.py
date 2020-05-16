@@ -16,4 +16,6 @@ def format_number(number):
     """
     if isinstance(number, int):
         return '{:,d}'.format(number)
+    if number is None:
+        return 'Unknown'
     return '{:3.2f}'.format(number)
