@@ -149,7 +149,7 @@ class Coronavirus(commands.Cog):
 
         elif province:
             if (country.lower() == "us" or country.lower() == "usa"):
-                data = await self.corona.get_single_state(province)
+                data = await self.corona.get_single_state(province, allow_none=True)
                 
             else:
                 embed = await self._jhucsse(country, province)

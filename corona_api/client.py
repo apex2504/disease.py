@@ -99,6 +99,8 @@ class Client:
         today_deaths = state_dict.get("todayDeaths", 0)
         active = state_dict.get("active", 0)
         tests = state_dict.get("tests", 0)
+        cases_per_million = state_dict.get("casesPerOneMillion", 0)
+        deaths_per_million = state_dict.get("deathsPerOneMillion", 0)
         tests_per_million = state_dict.get("testsPerOneMillion", 0)
 
         state_stats = StateStatistics(
@@ -109,6 +111,8 @@ class Client:
         today_deaths,
         active,
         tests,
+        cases_per_million,
+        deaths_per_million,
         tests_per_million
         )
 
@@ -446,24 +450,28 @@ class Client:
         """
         Get the stats for all US states
         """
-        yesterday = kwargs.get('yesterday')
-        sort = kwargs.get('sort')
+        yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
+        sort = kwargs.get('sort', None)
 
         endpoint = ALL_STATES.format(self.api_url)
         params = None
 
-        if sort and yesterday:
-            self._check_sort(sort)
+        if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday, "sort": sort}
 
-        elif sort:
-            params = {"sort": sort}
+        if allow_none:
+            self._check_allow_none(allow_none)
 
-        elif yesterday:
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+
+        if sort:
+            self._check_sort(sort)
+            params = {"yesterday": yesterday, "allowNull": allow_none, "sort": sort}
+        
+        else:
+            params = {"yesterday": yesterday, "allowNull": allow_none}
 
         state_info = await self.request_client.make_request(endpoint, params)
 
@@ -480,15 +488,20 @@ class Client:
         """
         Get the stats for a specific province of a country
         """
-        yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
 
         endpoint = SINGLE_STATE.format(self.api_url, state)
-        params = None
 
         if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+        
+        if allow_none:
+            self._check_allow_none(allow_none)
+        
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+        params = {"yesterday": yesterday, "allowNull": allow_none}
 
         state_info = await self.request_client.make_request(endpoint, params)
 
@@ -501,16 +514,21 @@ class Client:
         """
         Get the stats for more than one state
         """
-        yesterday = kwargs.get('yesterday')
+        yesterday = kwargs.get('yesterday', False)
+        allow_none = kwargs.get('allow_none', False)
         state_list = ','.join(map(str, states))
 
         endpoint = SINGLE_STATE.format(self.api_url, state_list)
-        params = None
-        
+
         if yesterday:
             self._check_yesterday(yesterday)
-            yesterday = str(yesterday).lower()
-            params = {"yesterday": yesterday}
+
+        if allow_none:
+            self._check_allow_none(allow_none)
+        
+        yesterday = str(yesterday).lower()
+        allow_none = str(allow_none).lower()
+        params = {"yesterday": yesterday, "allowNull": allow_none}
             
         data = await self.request_client.make_request(endpoint, params)
 
@@ -519,9 +537,9 @@ class Client:
         
         returned_states = []
 
-        for country in data:
+        for state in data:
             returned_states.append(
-                self._compile_state(country)
+                self._compile_state(state)
             )
         return returned_states
 
@@ -806,7 +824,7 @@ class Client:
         return data
 
 
-    async def gov_country(self, country):
+    async def gov_country(self, country, **kwargs):
         """
         Get the data from the Government of a specified country.
 
@@ -815,7 +833,15 @@ class Client:
 
         To get a list of attributes, you can use `list(data.keys())`
         """
+        allow_none = kwargs.get('allow_none', False)
+
+        if allow_none:
+            self._check_allow_none(allow_none)
+        
+        allow_none = str(allow_none).lower()
+        params = {"allowNull": allow_none}
+
         endpoint = GOV_COUNTRY.format(self.api_url, country)
-        data = await self.request_client.make_request(endpoint)
+        data = await self.request_client.make_request(endpoint, params)
 
         return data

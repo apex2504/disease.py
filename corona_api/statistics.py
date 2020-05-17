@@ -47,7 +47,7 @@ class CountryStatistics:
 
 
 class StateStatistics:
-    def __init__(self, name, cases, deaths, today_cases, today_deaths, active, tests, tests_per_million):
+    def __init__(self, name, cases, deaths, today_cases, today_deaths, active, tests, cases_per_million, deaths_per_million, tests_per_million):
         self.name = name
         self.cases = cases
         self.deaths = deaths
@@ -55,6 +55,8 @@ class StateStatistics:
         self.today_deaths = today_deaths
         self.active = active
         self.tests = tests
+        self.cases_per_million = cases_per_million
+        self.deaths_per_million = deaths_per_million
         self.tests_per_million = tests_per_million
 
 
