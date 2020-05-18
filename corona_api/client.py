@@ -52,7 +52,7 @@ class Client:
 
     
     def _compile_country_data(self, country_stats):
-        country_name = country_stats.get("country", "Null")
+        country_name = country_stats.get("country")
         total_country_cases = country_stats.get("cases", 0)
         total_country_deaths = country_stats.get("deaths", 0)
         total_country_recoveries = country_stats.get("recovered", 0)
@@ -64,7 +64,11 @@ class Client:
         cases_per_million = country_stats.get("casesPerOneMillion", 0)
         deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
         tests_per_million = country_stats.get("testsPerOneMillion", 0)
-        continent = country_stats.get("continent", None)
+        recoveries_per_million = country_stats.get("recoveredPerOneMillion", 0)
+        critical_per_million = country_stats.get("criticalPerOneMillion", 0)
+        active_per_million = country_stats.get("activePerOneMillion", 0)
+        continent = country_stats.get("continent")
+        population = country_stats.get("population", 0)
         updated_epoch = country_stats.get("updated", 0)
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
@@ -86,7 +90,11 @@ class Client:
             cases_per_million,
             deaths_per_million,
             tests_per_million,
+            recoveries_per_million,
+            critical_per_million,
+            active_per_million,
             continent,
+            population,
             updated
         )
 
@@ -197,6 +205,10 @@ class Client:
         cases_per_million = data.get("casesPerOneMillion", 0)
         deaths_per_million = data.get("deathsPerOneMillion", 0)
         tests_per_million = data.get("testsPerOneMillion", 0)
+        active_per_million = data.get("activePerOneMillion", 0)
+        recoveries_per_million = data.get("recoveredPerOneMillion", 0)
+        critical_per_million = data.get("criticalPerOneMillion", 0)
+        population = data.get("population", 0)
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
         return ContinentStatistics(
@@ -213,6 +225,10 @@ class Client:
             cases_per_million,
             deaths_per_million,
             tests_per_million,
+            active_per_million,
+            recoveries_per_million,
+            critical_per_million,
+            population,
             updated
         )    
 
@@ -326,11 +342,15 @@ class Client:
         today_deaths = global_data.get("todayDeaths", 0)
         total_critical = global_data.get("critical", 0)
         updated_epoch = global_data.get("updated", 0)
-        active = global_data.get("active", cases-deaths-recoveries)
+        active = global_data.get("active", 0)
         tests = global_data.get("tests", 0)
         cases_per_million = global_data.get("casesPerOneMillion", 0)
         deaths_per_million = global_data.get("deathsPerOneMillion", 0)
         tests_per_million = global_data.get("testsPerOneMillion", 0)
+        active_per_million = global_data.get("activePerOneMillion", 0)
+        recoveries_per_million = global_data.get("recoveredPerOneMillion", 0)
+        critical_per_million = global_data.get("criticalPerOneMillion", 0)
+        population = global_data.get("population", 0)
         infected_countries = global_data.get("affectedCountries")
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
@@ -346,6 +366,10 @@ class Client:
             cases_per_million,
             deaths_per_million,
             tests_per_million,
+            active_per_million,
+            recoveries_per_million,
+            critical_per_million,
+            population,
             infected_countries,
             updated,
             )

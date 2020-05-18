@@ -1,6 +1,7 @@
 class GlobalStatistics:
     def __init__(self, cases, deaths, recoveries, today_cases, today_deaths, total_critical, active,
-                tests, cases_per_million, deaths_per_million, tests_per_million, infected_countries, updated):
+                tests, cases_per_million, deaths_per_million, tests_per_million, active_per_million,
+                recoveries_per_million, critical_per_million, population, infected_countries, updated):
         self.cases = cases
         self.deaths = deaths
         self.recoveries = recoveries
@@ -12,6 +13,10 @@ class GlobalStatistics:
         self.cases_per_million = cases_per_million
         self.deaths_per_million = deaths_per_million
         self.tests_per_million = tests_per_million
+        self.active_per_million = active_per_million
+        self.recoveries_per_million = recoveries_per_million
+        self.critical_per_million = critical_per_million
+        self.population = population
         self.infected_countries = infected_countries
         self.updated = updated
 
@@ -28,7 +33,8 @@ class CountryInfo:
 
 class CountryStatistics:
     def __init__(self, info, name, cases, deaths, recoveries, today_cases, today_deaths, critical, active, 
-                tests, cases_per_million, deaths_per_million, tests_per_million, continent, updated):
+                tests, cases_per_million, deaths_per_million, tests_per_million, recoveries_per_million,
+                critical_per_million, active_per_million, continent, population, updated):
         self.info = info
         self.name = name
         self.cases = cases
@@ -42,7 +48,11 @@ class CountryStatistics:
         self.cases_per_million = cases_per_million
         self.deaths_per_million = deaths_per_million
         self.tests_per_million = tests_per_million
+        self.recoveries_per_million = recoveries_per_million
+        self.critical_per_million = critical_per_million
+        self.active_per_million = active_per_million
         self.continent = continent
+        self.population = population
         self.updated = updated
 
 
@@ -90,7 +100,8 @@ class JhuCsseStatistics:
 
 class ContinentStatistics:
     def __init__(self, name, countries, cases, deaths, recoveries, critical, active, tests, today_cases,
-                 today_deaths, cases_per_million, deaths_per_million, tests_per_million, updated):
+                 today_deaths, cases_per_million, deaths_per_million, tests_per_million, active_per_million,
+                 recoveries_per_million, critical_per_million, population, updated):
         self.name = name
         self.countries = countries
         self.cases = cases
@@ -104,6 +115,10 @@ class ContinentStatistics:
         self.cases_per_million = cases_per_million
         self.deaths_per_million = deaths_per_million
         self.tests_per_million = tests_per_million
+        self.active_per_million = active_per_million
+        self.recoveries_per_million = recoveries_per_million
+        self.critical = critical_per_million
+        self.population = population
         self.updated = updated
 
 
