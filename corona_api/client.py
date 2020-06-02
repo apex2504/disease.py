@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from .request import RequestClient
 from .statistics import *
-from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter, BadAllowNoneParameter
+from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter, BadTwoDaysAgoParameter, BadAllowNoneParameter
 from .endpoints import *
 
 
@@ -23,12 +23,16 @@ class Client:
 
     def _check_yesterday(self, value):
         if not isinstance(value, bool):
-            raise BadYesterdayParameter('Value for yesterday should either be True or False')
+            raise BadYesterdayParameter('Value for yesterday should either be True or False.')
+
+    def _check_two_days_ago(self, value):
+        if not isinstance(value, bool):
+            raise BadTwoDaysAgoParameter('Value for two_days_ago should either be True or False.')
 
 
     def _check_allow_none(self, value):
         if not isinstance(value, bool):
-            raise BadAllowNoneParameter('Value for allow_none should either be True or False')
+            raise BadAllowNoneParameter('Value for allow_none should either be True or False.')
 
 
     def _compile_countryInfo(self, countryInfo):
@@ -58,6 +62,7 @@ class Client:
         total_country_recoveries = country_stats.get("recovered", 0)
         today_cases = country_stats.get("todayCases", 0)
         today_deaths = country_stats.get("todayDeaths", 0)
+        today_recoveries = country_stats.get("todayRecovered", 0)
         total_critical = country_stats.get("critical", 0)
         active = country_stats.get("active", 0)
         tests = country_stats.get("tests", 0)
@@ -67,6 +72,9 @@ class Client:
         recoveries_per_million = country_stats.get("recoveredPerOneMillion", 0)
         critical_per_million = country_stats.get("criticalPerOneMillion", 0)
         active_per_million = country_stats.get("activePerOneMillion", 0)
+        one_case_per_people = country_stats.get("oneCasePerPeople", 0)
+        one_death_per_people = country_stats.get("oneDeathPerPeople", 0)
+        one_test_per_people = country_stats.get("oneTestPerPeople", 0)
         continent = country_stats.get("continent")
         population = country_stats.get("population", 0)
         updated_epoch = country_stats.get("updated", 0)
@@ -84,6 +92,7 @@ class Client:
             total_country_recoveries,
             today_cases,
             today_deaths,
+            today_recoveries,
             total_critical,
             active,
             tests,
@@ -93,6 +102,9 @@ class Client:
             recoveries_per_million,
             critical_per_million,
             active_per_million,
+            one_case_per_people,
+            one_death_per_people,
+            one_test_per_people,
             continent,
             population,
             updated
@@ -198,6 +210,7 @@ class Client:
         recoveries = data.get("recovered", 0)
         today_cases = data.get("todayCases", 0)
         today_deaths = data.get("todayDeaths", 0)
+        today_recoveries = data.get("todayRecovered", 0)
         critical = data.get("critical", 0)
         updated_epoch = data.get("updated", 0)
         active = data.get("active", cases-deaths-recoveries)
@@ -222,6 +235,7 @@ class Client:
             tests,
             today_cases,
             today_deaths,
+            today_recoveries,
             cases_per_million,
             deaths_per_million,
             tests_per_million,
@@ -319,6 +333,7 @@ class Client:
         Get the global stats for Coronavirus COVID-19
         """
         yesterday = kwargs.get('yesterday', False)
+        two_days_ago = kwargs.get('two_days_ago', False)
         allow_none = kwargs.get('allow_none', False)
 
         endpoint = GLOBAL_DATA.format(self.api_url)
@@ -326,12 +341,19 @@ class Client:
         if yesterday:
             self._check_yesterday(yesterday)
         
+        if two_days_ago:
+            self._check_two_days_ago(two_days_ago)
+
+        if yesterday and two_days_ago:
+            raise ValueError('yesterday and two_days_ago cannot both be True.')
+        
         if allow_none:
             self._check_allow_none(allow_none)
         
         yesterday = str(yesterday).lower()
+        two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
-        params = {"yesterday": yesterday, "allowNull": allow_none}
+        params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
 
         global_data = await self.request_client.make_request(endpoint, params)
 
@@ -340,6 +362,7 @@ class Client:
         recoveries = global_data.get("recovered", 0)
         today_cases = global_data.get("todayCases", 0)
         today_deaths = global_data.get("todayDeaths", 0)
+        today_recoveries = global_data.get("todayRecovered", 0)
         total_critical = global_data.get("critical", 0)
         updated_epoch = global_data.get("updated", 0)
         active = global_data.get("active", 0)
@@ -350,6 +373,9 @@ class Client:
         active_per_million = global_data.get("activePerOneMillion", 0)
         recoveries_per_million = global_data.get("recoveredPerOneMillion", 0)
         critical_per_million = global_data.get("criticalPerOneMillion", 0)
+        one_case_per_people = global_data.get("oneCasePerPeople", 0)
+        one_death_per_people = global_data.get("oneDeathPerPeople", 0)
+        one_test_per_people = global_data.get("oneTestPerPeople", 0)
         population = global_data.get("population", 0)
         infected_countries = global_data.get("affectedCountries")
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
@@ -360,6 +386,7 @@ class Client:
             recoveries,
             today_cases,
             today_deaths,
+            today_recoveries,
             total_critical,
             active,
             tests,
@@ -369,6 +396,9 @@ class Client:
             active_per_million,
             recoveries_per_million,
             critical_per_million,
+            one_case_per_people,
+            one_death_per_people,
+            one_test_per_people,
             population,
             infected_countries,
             updated,
@@ -380,19 +410,27 @@ class Client:
         Get the data for a specific country.
         """
         yesterday = kwargs.get('yesterday', False)
+        two_days_ago = kwargs.get('two_days_ago', False)
         allow_none = kwargs.get('allow_none', False)
 
         endpoint = COUNTRY_DATA.format(self.api_url, country)
 
         if yesterday:
             self._check_yesterday(yesterday)
+
+        if two_days_ago:
+            self._check_two_days_ago(two_days_ago)
+
+        if yesterday and two_days_ago:
+            raise ValueError('yesterday and two_days_ago cannot both be True.')
         
         if allow_none:
             self._check_allow_none(allow_none)
         
         yesterday = str(yesterday).lower()
+        two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
-        params = {"yesterday": yesterday, "allowNull": allow_none}
+        params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
 
         country_stats = await self.request_client.make_request(endpoint, params)
 
@@ -404,6 +442,7 @@ class Client:
         Get the data for more than one country, but not necessarily all of them.
         """
         yesterday = kwargs.get('yesterday', False)
+        two_days_ago = kwargs.get('two_days_ago', False)
         allow_none = kwargs.get('allow_none', False)
         country_list = ','.join(map(str, countries))
 
@@ -412,12 +451,18 @@ class Client:
         if yesterday:
             self._check_yesterday(yesterday)
 
+        if two_days_ago:
+            self._check_two_days_ago(two_days_ago)
+
+        if yesterday and two_days_ago:
+            raise ValueError('yesterday and two_days_ago cannot both be True.')
+
         if allow_none:
             self._check_allow_none(allow_none)
         
         yesterday = str(yesterday).lower()
         allow_none = str(allow_none).lower()
-        params = {"yesterday": yesterday, "allowNull": allow_none}
+        params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
             
         data = await self.request_client.make_request(endpoint, params)
 
@@ -438,6 +483,7 @@ class Client:
         Get the data for every infected country.
         """
         yesterday = kwargs.get('yesterday', False)
+        two_days_ago = kwargs.get('two_days_ago', False)
         allow_none = kwargs.get('allow_none', False)
         sort = kwargs.get('sort', None)
 
@@ -447,18 +493,25 @@ class Client:
         if yesterday:
             self._check_yesterday(yesterday)
 
+        if two_days_ago:
+            self._check_two_days_ago(two_days_ago)
+
+        if yesterday and two_days_ago:
+            raise ValueError('yesterday and two_days_ago cannot both be True.')
+
         if allow_none:
             self._check_allow_none(allow_none)
 
         yesterday = str(yesterday).lower()
+        two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
 
         if sort:
             self._check_sort(sort)
-            params = {"yesterday": yesterday, "allowNull": allow_none, "sort": sort}
+            params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none, "sort": sort}
         
         else:
-            params = {"yesterday": yesterday, "allowNull": allow_none}
+            params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
             
         all_countries = await self.request_client.make_request(endpoint, params)
 
@@ -665,8 +718,9 @@ class Client:
         Get the statistics for world continents.
         """
         yesterday = kwargs.get('yesterday', False)
-        sort = kwargs.get('sort', None)
+        two_days_ago = kwargs.get('two_days_ago', False)
         allow_none = kwargs.get('allow_none', False)
+        sort = kwargs.get('sort', None)
 
         endpoint = ALL_CONTINENTS.format(self.api_url)
         params = None
@@ -674,18 +728,25 @@ class Client:
         if yesterday:
             self._check_yesterday(yesterday)
 
+        if two_days_ago:
+            self._check_two_days_ago(two_days_ago)
+
+        if yesterday and two_days_ago:
+            raise ValueError('yesterday and two_days_ago cannot both be True.')
+
         if allow_none:
             self._check_allow_none(allow_none)
 
         yesterday = str(yesterday).lower()
+        two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
 
         if sort:
             self._check_sort(sort)
-            params = {"yesterday": yesterday, "allowNull": allow_none, "sort": sort}
+            params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none, "sort": sort}
         
         else:
-            params = {"yesterday": yesterday, "allowNull": allow_none}
+            params = {"yesterday": yesterday,"twoDaysAgo": two_days_ago, "allowNull": allow_none}
 
         data = await self.request_client.make_request(endpoint, params)
 
@@ -702,6 +763,7 @@ class Client:
         Get the statistics for a single continent.
         """
         yesterday = kwargs.get('yesterday', False)
+        two_days_ago = kwargs.get('two_days_ago', False)
         allow_none = kwargs.get('allow_none', False)
 
         endpoint = CONTINENT_DATA.format(self.api_url)
@@ -710,7 +772,14 @@ class Client:
         if yesterday:
             self._check_yesterday(yesterday)
 
+        if two_days_ago:
+            self._check_two_days_ago(two_days_ago)
+
+        if yesterday and two_days_ago:
+            raise ValueError('yesterday and two_days_ago cannot both be True.')
+
         yesterday = str(yesterday).lower()
+        two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
         params = {"yesterday": yesterday, "allowNull": allow_none}
 

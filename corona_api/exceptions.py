@@ -10,5 +10,8 @@ class BadSortParameter(Exception):
 class BadYesterdayParameter(Exception):
     pass
 
+class BadTwoDaysAgoParameter(Exception):
+    pass
+
 class BadAllowNoneParameter(Exception):
     pass

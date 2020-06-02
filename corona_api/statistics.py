@@ -1,12 +1,14 @@
 class GlobalStatistics:
-    def __init__(self, cases, deaths, recoveries, today_cases, today_deaths, total_critical, active,
-                tests, cases_per_million, deaths_per_million, tests_per_million, active_per_million,
-                recoveries_per_million, critical_per_million, population, infected_countries, updated):
+    def __init__(self, cases, deaths, recoveries, today_cases, today_deaths, today_recoveries, total_critical,
+                active, tests, cases_per_million, deaths_per_million, tests_per_million, active_per_million,
+                recoveries_per_million, critical_per_million, one_case_per_people, one_death_per_people, one_test_per_people, 
+                population, infected_countries, updated):
         self.cases = cases
         self.deaths = deaths
         self.recoveries = recoveries
         self.today_cases = today_cases
         self.today_deaths = today_deaths
+        self.today_recoveries = today_recoveries
         self.critical = total_critical
         self.active = active
         self.tests = tests
@@ -32,9 +34,10 @@ class CountryInfo:
 
 
 class CountryStatistics:
-    def __init__(self, info, name, cases, deaths, recoveries, today_cases, today_deaths, critical, active, 
-                tests, cases_per_million, deaths_per_million, tests_per_million, recoveries_per_million,
-                critical_per_million, active_per_million, continent, population, updated):
+    def __init__(self, info, name, cases, deaths, recoveries, today_cases, today_deaths, today_recoveries, critical,
+                active, tests, cases_per_million, deaths_per_million, tests_per_million, recoveries_per_million,
+                critical_per_million, active_per_million, one_case_per_people, one_death_per_people, one_test_per_people,
+                continent, population, updated):
         self.info = info
         self.name = name
         self.cases = cases
@@ -42,6 +45,7 @@ class CountryStatistics:
         self.recoveries = recoveries
         self.today_cases = today_cases
         self.today_deaths = today_deaths
+        self.today_recoveries = today_recoveries
         self.critical = critical
         self.active = active
         self.tests = tests
@@ -51,6 +55,9 @@ class CountryStatistics:
         self.recoveries_per_million = recoveries_per_million
         self.critical_per_million = critical_per_million
         self.active_per_million = active_per_million
+        self.one_case_per_people = one_case_per_people
+        self.one_death_per_people = one_death_per_people
+        self.one_test_per_people = one_test_per_people
         self.continent = continent
         self.population = population
         self.updated = updated
@@ -100,8 +107,8 @@ class JhuCsseStatistics:
 
 class ContinentStatistics:
     def __init__(self, name, countries, cases, deaths, recoveries, critical, active, tests, today_cases,
-                 today_deaths, cases_per_million, deaths_per_million, tests_per_million, active_per_million,
-                 recoveries_per_million, critical_per_million, population, updated):
+                 today_deaths, today_recoveries, cases_per_million, deaths_per_million, tests_per_million,
+                 active_per_million, recoveries_per_million, critical_per_million, population, updated):
         self.name = name
         self.countries = countries
         self.cases = cases
@@ -112,6 +119,7 @@ class ContinentStatistics:
         self.tests = tests
         self.today_cases = today_cases
         self.today_deaths = today_deaths
+        self.today_recoveries = today_recoveries
         self.cases_per_million = cases_per_million
         self.deaths_per_million = deaths_per_million
         self.tests_per_million = tests_per_million
@@ -122,12 +130,11 @@ class ContinentStatistics:
         self.updated = updated
 
 
-#api gives fips, cases and deaths from NYT as strings, hence the conversion to int in the below classes
 class NewYorkTimesUsaStatistics:
     def __init__(self, date, cases, deaths):
         self.date = date
-        self.cases = int(cases) if cases else None
-        self.deaths = int(deaths) if deaths else None
+        self.cases = cases
+        self.deaths = deaths
 
 
 class NewYorkTimesStateStatistics:
@@ -135,8 +142,8 @@ class NewYorkTimesStateStatistics:
         self.date = date
         self.state = state
         self.fips = int(fips) if fips else None
-        self.cases = int(cases) if cases else None
-        self.deaths = int(deaths) if deaths else None
+        self.cases = cases
+        self.deaths = deaths
 
 
 class NewYorkTimesCountyStatistics:
@@ -145,8 +152,8 @@ class NewYorkTimesCountyStatistics:
         self.county = county
         self.state = state
         self.fips = int(fips) if fips else None
-        self.cases = int(cases) if cases else None
-        self.deaths = int(deaths) if deaths else None
+        self.cases = cases
+        self.deaths = deaths
 
 
 class AppleSubregions:
