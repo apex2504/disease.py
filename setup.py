@@ -1,5 +1,6 @@
 from setuptools import setup
-from corona_api import __version__ as ver
+
+ver = '0.9.0.post1'
 
 with open('README.md', 'r') as f:
   long_desc = f.read()
