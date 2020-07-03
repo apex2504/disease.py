@@ -6,9 +6,9 @@ def format_date(dt):
 
 def parse_date(dt):
     """
-    Split the datetime into its different parts, useful for formatting date yourself
+    Split the datetime into individual parts, useful for formatting date yourself
     """
-    return dt.day, dt.month, dt.year, dt.hour, dt.minute, dt.second #returns format DAY, MONTH, YEAR, HOUR, MINUTE, SECOND
+    return dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second #returns format YEAR, MONTH, DAY, HOUR, MINUTE, SECOND
 
 def format_number(number):
     """

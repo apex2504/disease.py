@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import corona_api
+import diseaseapi
 import asyncio
 
 
@@ -17,11 +17,11 @@ def generate_base_embed(embed, data):
             The data containing the figures and stats.
     """
 
-    embed.add_field(name="Total cases", value = corona_api.format_number(data.cases))
-    embed.add_field(name="New cases today", value = corona_api.format_number(data.today_cases))
-    embed.add_field(name="Total deaths", value = corona_api.format_number(data.deaths))
-    embed.add_field(name="New deaths today", value = corona_api.format_number(data.today_deaths))
-    embed.add_field(name="Number of tests", value = corona_api.format_number(data.tests))
+    embed.add_field(name="Total cases", value = diseaseapi.format_number(data.cases))
+    embed.add_field(name="New cases today", value = diseaseapi.format_number(data.today.cases))
+    embed.add_field(name="Total deaths", value = diseaseapi.format_number(data.deaths))
+    embed.add_field(name="New deaths today", value = diseaseapi.format_number(data.today_.eaths))
+    embed.add_field(name="Number of tests", value = diseaseapi.format_number(data.tests))
 
 def generate_all_embed(embed, data):
     
@@ -35,10 +35,10 @@ def generate_all_embed(embed, data):
             The data containing the figures and stats.
     """
     
-    embed.add_field(name="Total recoveries", value = corona_api.format_number(data.recoveries))
-    embed.add_field(name="Total critical cases", value = corona_api.format_number(data.critical))
-    embed.add_field(name="Active cases", value = corona_api.format_number(data.active))
-    embed.add_field(name="Last updated", value = corona_api.format_date(data.updated))
+    embed.add_field(name="Total recoveries", value = diseaseapi.format_number(data.recoveries))
+    embed.add_field(name="Total critical cases", value = diseaseapi.format_number(data.critical))
+    embed.add_field(name="Active cases", value = diseaseapi.format_number(data.active))
+    embed.add_field(name="Last updated", value = diseaseapi.format_date(data.updated))
 
 def generate_country_embed(embed, data, yesterdays_data):
     
@@ -54,14 +54,14 @@ def generate_country_embed(embed, data, yesterdays_data):
             The data containing yesterday's figures and stats.
     """
     
-    embed.add_field(name="New cases yesterday", value = corona_api.format_number(yesterdays_data.today_cases))
-    embed.add_field(name="New deaths yesterday", value = corona_api.format_number(yesterdays_data.today_deaths))
-    embed.add_field(name="Total recoveries", value = corona_api.format_number(data.recoveries))
-    embed.add_field(name="Total critical cases", value = corona_api.format_number(data.critical))
-    embed.add_field(name="Active cases", value = corona_api.format_number(data.active))
-    embed.add_field(name="Cases per million people", value = corona_api.format_number(data.cases_per_million))
-    embed.add_field(name="Deaths per million people", value = corona_api.format_number(data.deaths_per_million))
-    embed.add_field(name="Last updated", value = corona_api.format_date(data.updated))
+    embed.add_field(name="New cases yesterday", value = diseaseapi.format_number(yesterdays_data.today.cases))
+    embed.add_field(name="New deaths yesterday", value = diseaseapi.format_number(yesterdays_data.today.deaths))
+    embed.add_field(name="Total recoveries", value = diseaseapi.format_number(data.recoveries))
+    embed.add_field(name="Total critical cases", value = diseaseapi.format_number(data.critical))
+    embed.add_field(name="Active cases", value = diseaseapi.format_number(data.active))
+    embed.add_field(name="Cases per million people", value = diseaseapi.format_number(data.per_million.cases))
+    embed.add_field(name="Deaths per million people", value = diseaseapi.format_number(data.per_million.deaths))
+    embed.add_field(name="Last updated", value = diseaseapi.format_date(data.updated))
     embed.description = "**Country: {}**".format(data.name)
     embed.set_thumbnail(url=data.info.flag)
 
@@ -79,9 +79,9 @@ def generate_state_embed(embed, data, yesterday):
             The data containing yesterday's figures and stats.
     """
     
-    embed.add_field(name="New cases yesterday", value = corona_api.format_number(yesterday.today_cases))
-    embed.add_field(name="New deaths yesterday", value = corona_api.format_number(yesterday.today_deaths))
-    embed.add_field(name="Active cases", value = corona_api.format_number(data.active))
+    embed.add_field(name="New cases yesterday", value = diseaseapi.format_number(yesterday.today.cases))
+    embed.add_field(name="New deaths yesterday", value = diseaseapi.format_number(yesterday.today.deaths))
+    embed.add_field(name="Active cases", value = diseaseapi.format_number(data.active))
     embed.description = "**State: {}**".format(data.name)
 
 
@@ -93,7 +93,8 @@ class Coronavirus(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-        self.corona = corona_api.Client()
+        self.diseaseapi = diseaseapi.Client()
+        self.corona = self.diseaseapi.covid19
 
     async def _jhucsse(self, country, province):
             
@@ -108,7 +109,7 @@ class Coronavirus(commands.Cog):
                 The name of the province we want data for.
         """
     
-        data = await self.corona.get_jhu_csse_data() #get all data from the JHU CSSE
+        data = await self.corona.jhucsse() #get all data from the JHU CSSE
 
         if country.lower() == 'uk':
             country = 'united kingdom' #corrections
@@ -120,11 +121,11 @@ class Coronavirus(commands.Cog):
         embed.set_footer(text="These stats are what has been officially confirmed. It is possible that real figures are different.")
         embed.description = "**Country: {}**\n**Province: {}**".format(relevant.country_name, relevant.province_name)
 
-        embed.add_field(name="Total cases", value = corona_api.format_number(relevant.confirmed_cases))
-        embed.add_field(name="Total deaths", value = corona_api.format_number(relevant.deaths))
-        embed.add_field(name="Total recoveries", value = corona_api.format_number(relevant.recoveries))
-        embed.add_field(name="Active cases", value = corona_api.format_number(relevant.confirmed_cases-relevant.deaths-relevant.recoveries))
-        embed.add_field(name="Last updated", value = corona_api.format_date(relevant.updated))
+        embed.add_field(name="Total cases", value = diseaseapi.format_number(relevant.confirmed_cases))
+        embed.add_field(name="Total deaths", value = diseaseapi.format_number(relevant.deaths))
+        embed.add_field(name="Total recoveries", value = diseaseapi.format_number(relevant.recoveries))
+        embed.add_field(name="Active cases", value = diseaseapi.format_number(relevant.confirmed_cases-relevant.deaths-relevant.recoveries))
+        embed.add_field(name="Last updated", value = diseaseapi.format_date(relevant.updated))
         #this is different from everything else due to the data the API reports, so we cant use a generic embed builder.
         return embed
 
@@ -149,29 +150,29 @@ class Coronavirus(commands.Cog):
 
         elif province:
             if (country.lower() == "us" or country.lower() == "usa"):
-                data = await self.corona.get_single_state(province, allow_none=True)
+                data = await self.corona.state(province, allow_none=True)
                 
             else:
                 embed = await self._jhucsse(country, province)
                 return await ctx.send(embed=embed)
 
         else:
-            data = await self.corona.get_country_data(country, allow_none=True)
+            data = await self.corona.country(country, allow_none=True)
 
         embed = discord.Embed(title="Coronavirus (COVID-19) stats", color=65280)
         embed.set_footer(text="These stats are what has been officially confirmed. It is possible that real figures are different.")
 
         generate_base_embed(embed, data)
 
-        if isinstance(data, corona_api.GlobalStatistics):
+        if isinstance(data, diseaseapi.covidstatistics.Global):
             generate_all_embed(embed, data)
 
-        elif isinstance(data, corona_api.CountryStatistics):
-            yesterdays_data = await self.corona.get_country_data(country, yesterday=True, allow_none=True)
+        elif isinstance(data, diseaseapi.covidstatistics.Country):
+            yesterdays_data = await self.corona.country(country, yesterday=True, allow_none=True)
             generate_country_embed(embed, data, yesterdays_data)
 
-        elif isinstance(data, corona_api.StateStatistics):
-            yesterdays_data = await self.corona.get_single_state(province, yesterday=True, allow_none=True)
+        elif isinstance(data, diseaseapi.covidstatistics.State):
+            yesterdays_data = await self.corona.state(province, yesterday=True, allow_none=True)
             generate_state_embed(embed, data, yesterdays_data)
 
         await ctx.send(embed=embed)
@@ -197,9 +198,9 @@ class Coronavirus(commands.Cog):
             country = 'korea, south' #no stats for north korea
 
         if province:
-            data = await self.corona.get_province_history(country, province, 14) #get the history for the given country with province
+            data = await self.corona.province_history(country, province, 14) #get the history for the given country with province
         else:
-            data = await self.corona.get_country_history(country, 14) #if no province given, get the data for whole country
+            data = await self.corona.country_history(country, 14) #if no province given, get the data for whole country
 
         name = data.name
         prov = str(data.province).title()
@@ -212,14 +213,14 @@ class Coronavirus(commands.Cog):
 
         for i in range(14): #get the previous 2 weeks
             case_history_value = "{}\n**{}:** \
-                {}".format(case_history_value, data.case_history[i].date,
-                corona_api.format_number(data.case_history[i].value) if data.case_history[i].value is not None else 'Unknown')
+                {}".format(case_history_value, data.history.cases[i].date,
+                diseaseapi.format_number(data.history.cases[i].value) if data.case_history[i].value is not None else 'Unknown')
             death_history_value = "{}\n**{}:** \
-                {}".format(death_history_value, data.death_history[i].date,
-                corona_api.format_number(data.death_history[i].value) if data.death_history[i].value is not None else 'Unknown')
+                {}".format(death_history_value, data.history.deaths[i].date,
+                diseaseapi.format_number(data.history.deaths[i].value) if data.history.deaths[i].value is not None else 'Unknown')
             recovery_history_value = "{}\n**{}:** \
-                {}".format(recovery_history_value, data.recovery_history[i].date,
-                corona_api.format_number(data.recovery_history[i].value) if data.recovery_history[i].value is not None else 'Unknown')
+                {}".format(recovery_history_value, data.history.recoveries[i].date,
+                diseaseapi.format_number(data.history.recoveries[i].value) if data.history.recoveries[i].value is not None else 'Unknown')
 
         embed.add_field(name="Number of cases", value=case_history_value)
         embed.add_field(name="Number of deaths", value=death_history_value)
@@ -239,11 +240,11 @@ class Coronavirus(commands.Cog):
                 The context for the command.
             sort:
                 The parameter by which to sort the data.
-                corona_api.exceptions.BadSortParameter will be raised if an invalid one is used.
+                diseaseapi.exceptions.BadSortParameter will be raised if an invalid one is used.
                 Defaults to sort by the number of cases.
         """
 
-        data = await self.corona.get_all_countries(sort=sort)
+        data = await self.corona.all_countries(sort=sort)
 
         embed = discord.Embed(title="Top 15 cases", description="", color=65280)
         embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
@@ -255,11 +256,11 @@ class Coronavirus(commands.Cog):
             if country.cases is None:
                 cases = 'Unknown'
             else:
-                cases = corona_api.format_number(country.cases)
+                cases = diseaseapi.format_number(country.cases)
             if country.deaths is None:
                 deaths = 'Unknown'
             else:
-                deaths = corona_api.format_number(country.deaths)
+                deaths = diseaseapi.format_number(country.deaths)
 
             embed.description = '{}**{}. {}:** {} cases, {} deaths.\n'.format(
                 embed.description, i, name, cases, deaths

@@ -1,17 +1,16 @@
 from datetime import datetime, timezone
-from .request import RequestClient
-from .statistics import *
+from .covidstatistics import *
 from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter, BadTwoDaysAgoParameter, BadAllowNoneParameter
-from .endpoints import *
+from .covidendpoints import *
 
 
-class Client:
+class Covid:
     """
-    Handles interactions with the NovelCOVID API
+    Handles interactions with the Open Disease API's COVID-19 data.
     """
-    def __init__(self, api_url='https://disease.sh/v2'):
+    def __init__(self, api_url, request_client):
         self.api_url = api_url
-        self.request_client = RequestClient()
+        self.request_client = request_client
 
     
     def _check_sort(self, sort):
@@ -33,6 +32,48 @@ class Client:
     def _check_allow_none(self, value):
         if not isinstance(value, bool):
             raise BadAllowNoneParameter('Value for allow_none should either be True or False.')
+
+    
+    def _compile_today(self, data):
+        return Today(
+            data.get('todayCases'),
+            data.get('todayDeaths'),
+            data.get('todayRecovered')
+        )
+
+    
+    def _compile_permillion(self, data):
+        return PerMillion(
+            data.get('casesPerOneMillion'),
+            data.get('deathsPerOneMillion'),
+            data.get('testsPerOneMillion'),
+            data.get('activePerOneMillion'),
+            data.get('recoveredPerOneMillion'),
+            data.get('criticalPerOneMillion')
+        )
+
+
+    def _compile_perpeople(self, data):
+        return PerPeople(
+            data.get('oneCasePerPeople'),
+            data.get('oneDeathPerPeople'),
+            data.get('oneTestPerPeople')
+        )
+
+
+    def _compile_statetoday(self, data):
+        return StateToday(
+            data.get('todayCases'),
+            data.get('todayDeaths')
+        )
+
+
+    def _compile_statepermillion(self, data):
+        return StatePerMillion(
+            data.get('casesPerOneMillion'),
+            data.get('deathsPerOneMillion'),
+            data.get('testsPerOneMillion')
+        )
 
 
     def _compile_countryInfo(self, countryInfo):
@@ -60,21 +101,12 @@ class Client:
         total_country_cases = country_stats.get("cases", 0)
         total_country_deaths = country_stats.get("deaths", 0)
         total_country_recoveries = country_stats.get("recovered", 0)
-        today_cases = country_stats.get("todayCases", 0)
-        today_deaths = country_stats.get("todayDeaths", 0)
-        today_recoveries = country_stats.get("todayRecovered", 0)
+        today = self._compile_today(country_stats)
         total_critical = country_stats.get("critical", 0)
         active = country_stats.get("active", 0)
         tests = country_stats.get("tests", 0)
-        cases_per_million = country_stats.get("casesPerOneMillion", 0)
-        deaths_per_million = country_stats.get("deathsPerOneMillion", 0)
-        tests_per_million = country_stats.get("testsPerOneMillion", 0)
-        recoveries_per_million = country_stats.get("recoveredPerOneMillion", 0)
-        critical_per_million = country_stats.get("criticalPerOneMillion", 0)
-        active_per_million = country_stats.get("activePerOneMillion", 0)
-        one_case_per_people = country_stats.get("oneCasePerPeople", 0)
-        one_death_per_people = country_stats.get("oneDeathPerPeople", 0)
-        one_test_per_people = country_stats.get("oneTestPerPeople", 0)
+        per_million = self._compile_permillion(country_stats)
+        per_people = self._compile_perpeople(country_stats)
         continent = country_stats.get("continent")
         population = country_stats.get("population", 0)
         updated_epoch = country_stats.get("updated", 0)
@@ -84,27 +116,18 @@ class Client:
 
         info = self._compile_countryInfo(countryInfo)
         
-        return CountryStatistics(
+        return Country(
             info,
             country_name,
             total_country_cases,
             total_country_deaths,
             total_country_recoveries,
-            today_cases,
-            today_deaths,
-            today_recoveries,
+            today,
             total_critical,
             active,
             tests,
-            cases_per_million,
-            deaths_per_million,
-            tests_per_million,
-            recoveries_per_million,
-            critical_per_million,
-            active_per_million,
-            one_case_per_people,
-            one_death_per_people,
-            one_test_per_people,
+            per_million,
+            per_people,
             continent,
             population,
             updated
@@ -115,25 +138,19 @@ class Client:
         state_name = state_dict.get("state")
         total_state_cases = state_dict.get("cases", 0)
         total_state_deaths = state_dict.get("deaths", 0)
-        today_cases = state_dict.get("todayCases", 0)
-        today_deaths = state_dict.get("todayDeaths", 0)
+        today = self._compile_statetoday(state_dict)
         active = state_dict.get("active", 0)
         tests = state_dict.get("tests", 0)
-        cases_per_million = state_dict.get("casesPerOneMillion", 0)
-        deaths_per_million = state_dict.get("deathsPerOneMillion", 0)
-        tests_per_million = state_dict.get("testsPerOneMillion", 0)
+        per_million = self._compile_statepermillion(state_dict)
 
-        state_stats = StateStatistics(
+        state_stats = State(
         state_name,
         total_state_cases,
         total_state_deaths,
-        today_cases,
-        today_deaths,
+        today,
         active,
         tests,
-        cases_per_million,
-        deaths_per_million,
-        tests_per_million
+        per_million
         )
 
         return state_stats
@@ -166,13 +183,17 @@ class Client:
             if not is_county:
                 recovery_history.append(HistoryEntry(date, d["recovered"][date]))
 
-        return HistoricalStatistics(
-            country_name,
+        his = History(
             case_history,
             death_history,
-            recovery_history,
-            province_name
-            )
+            recovery_history
+        )
+
+        return Historical(
+            country_name,
+            province_name,
+            his
+        )
 
     
     def _compile_jhu_data(self, matching_county):
@@ -187,7 +208,7 @@ class Client:
 
         updated = datetime.strptime(matching_county.get('updatedAt'), '%Y-%m-%d %H:%M:%S')
 
-        stat = JhuCsseStatistics(
+        stat = JhuCsse(
                 country,
                 province,
                 county_name,
@@ -208,23 +229,16 @@ class Client:
         cases = data.get("cases", 0)
         deaths = data.get("deaths", 0)
         recoveries = data.get("recovered", 0)
-        today_cases = data.get("todayCases", 0)
-        today_deaths = data.get("todayDeaths", 0)
-        today_recoveries = data.get("todayRecovered", 0)
+        today = self._compile_today(data)
         critical = data.get("critical", 0)
         updated_epoch = data.get("updated", 0)
         active = data.get("active", cases-deaths-recoveries)
         tests = data.get("tests", 0)
-        cases_per_million = data.get("casesPerOneMillion", 0)
-        deaths_per_million = data.get("deathsPerOneMillion", 0)
-        tests_per_million = data.get("testsPerOneMillion", 0)
-        active_per_million = data.get("activePerOneMillion", 0)
-        recoveries_per_million = data.get("recoveredPerOneMillion", 0)
-        critical_per_million = data.get("criticalPerOneMillion", 0)
+        per_million = self._compile_permillion(data)
         population = data.get("population", 0)
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
-        return ContinentStatistics(
+        return Continent(
             name,
             countries,
             cases,
@@ -233,15 +247,8 @@ class Client:
             critical,
             active,
             tests,
-            today_cases,
-            today_deaths,
-            today_recoveries,
-            cases_per_million,
-            deaths_per_million,
-            tests_per_million,
-            active_per_million,
-            recoveries_per_million,
-            critical_per_million,
+            today,
+            per_million,
             population,
             updated
         )    
@@ -277,7 +284,7 @@ class Client:
         if date:
             date = datetime.strptime(date, "%Y-%m-%d")
 
-        return NewYorkTimesStateStatistics(
+        return NewYorkTimesState(
             date,
             state,
             fips,
@@ -297,7 +304,7 @@ class Client:
         if date:
             date = datetime.strptime(date, "%Y-%m-%d")
 
-        return NewYorkTimesCountyStatistics(
+        return NewYorkTimesCounty(
             date,
             county,
             state,
@@ -318,7 +325,7 @@ class Client:
         if date:
             date = datetime.strptime(date, "%Y-%m-%d")
 
-        return AppleMobilityData(
+        return Mobility(
             name,
             _type,
             date,
@@ -360,84 +367,34 @@ class Client:
         cases = global_data.get("cases", 0)
         deaths = global_data.get("deaths", 0)
         recoveries = global_data.get("recovered", 0)
-        today_cases = global_data.get("todayCases", 0)
-        today_deaths = global_data.get("todayDeaths", 0)
-        today_recoveries = global_data.get("todayRecovered", 0)
+        today = self._compile_today(global_data)
         total_critical = global_data.get("critical", 0)
         updated_epoch = global_data.get("updated", 0)
         active = global_data.get("active", 0)
         tests = global_data.get("tests", 0)
-        cases_per_million = global_data.get("casesPerOneMillion", 0)
-        deaths_per_million = global_data.get("deathsPerOneMillion", 0)
-        tests_per_million = global_data.get("testsPerOneMillion", 0)
-        active_per_million = global_data.get("activePerOneMillion", 0)
-        recoveries_per_million = global_data.get("recoveredPerOneMillion", 0)
-        critical_per_million = global_data.get("criticalPerOneMillion", 0)
-        one_case_per_people = global_data.get("oneCasePerPeople", 0)
-        one_death_per_people = global_data.get("oneDeathPerPeople", 0)
-        one_test_per_people = global_data.get("oneTestPerPeople", 0)
+        per_million = self._compile_permillion(global_data)
+        per_people = self._compile_perpeople(global_data)
         population = global_data.get("population", 0)
-        infected_countries = global_data.get("affectedCountries")
+        affected_countries = global_data.get("affectedCountries")
         updated = datetime.utcfromtimestamp(updated_epoch/1000.0)
 
-        return GlobalStatistics(
+        return Global(
             cases,
             deaths,
             recoveries,
-            today_cases,
-            today_deaths,
-            today_recoveries,
+            today,
             total_critical,
             active,
             tests,
-            cases_per_million,
-            deaths_per_million,
-            tests_per_million,
-            active_per_million,
-            recoveries_per_million,
-            critical_per_million,
-            one_case_per_people,
-            one_death_per_people,
-            one_test_per_people,
+            per_million,
+            per_people,
             population,
-            infected_countries,
+            affected_countries,
             updated,
             )
 
     
-    async def get_country_data(self, country, **kwargs):
-        """
-        Get the data for a specific country.
-        """
-        yesterday = kwargs.get('yesterday', False)
-        two_days_ago = kwargs.get('two_days_ago', False)
-        allow_none = kwargs.get('allow_none', False)
-
-        endpoint = COUNTRY_DATA.format(self.api_url, country)
-
-        if yesterday:
-            self._check_yesterday(yesterday)
-
-        if two_days_ago:
-            self._check_two_days_ago(two_days_ago)
-
-        if yesterday and two_days_ago:
-            raise ValueError('yesterday and two_days_ago cannot both be True.')
-        
-        if allow_none:
-            self._check_allow_none(allow_none)
-        
-        yesterday = str(yesterday).lower()
-        two_days_ago = str(two_days_ago).lower()
-        allow_none = str(allow_none).lower()
-        params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
-
-        country_stats = await self.request_client.make_request(endpoint, params)
-
-        return self._compile_country_data(country_stats)
-
-
-    async def get_country_list(self, *countries, **kwargs):
+    async def country(self, *countries, **kwargs):
         """
         Get the data for more than one country, but not necessarily all of them.
         """
@@ -461,6 +418,7 @@ class Client:
             self._check_allow_none(allow_none)
         
         yesterday = str(yesterday).lower()
+        two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
         params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
             
@@ -476,9 +434,8 @@ class Client:
                 self._compile_country_data(country)
             )
         return returned_countries
-
     
-    async def get_all_countries(self, **kwargs):
+    async def all_countries(self, **kwargs):
         """
         Get the data for every infected country.
         """
@@ -523,7 +480,7 @@ class Client:
         return list_of_countries
     
     
-    async def get_all_states(self, **kwargs):
+    async def all_states(self, **kwargs):
         """
         Get the stats for all US states
         """
@@ -561,35 +518,9 @@ class Client:
         return state_data
 
     
-    async def get_single_state(self, state, **kwargs):
+    async def state(self, *states, **kwargs):
         """
-        Get the stats for a specific province of a country
-        """
-        yesterday = kwargs.get('yesterday', False)
-        allow_none = kwargs.get('allow_none', False)
-
-        endpoint = SINGLE_STATE.format(self.api_url, state)
-
-        if yesterday:
-            self._check_yesterday(yesterday)
-        
-        if allow_none:
-            self._check_allow_none(allow_none)
-        
-        yesterday = str(yesterday).lower()
-        allow_none = str(allow_none).lower()
-        params = {"yesterday": yesterday, "allowNull": allow_none}
-
-        state_info = await self.request_client.make_request(endpoint, params)
-
-        compiled_state = self._compile_state(state_info)
-
-        return compiled_state
-
-
-    async def get_state_list(self, *states, **kwargs):
-        """
-        Get the stats for more than one state
+        Get the stats for US States
         """
         yesterday = kwargs.get('yesterday', False)
         allow_none = kwargs.get('allow_none', False)
@@ -621,7 +552,7 @@ class Client:
         return returned_states
 
 
-    async def get_country_history(self, country='all', last_days='all'):
+    async def country_history(self, country='all', last_days='all'):
         """
         Get historical data for a specific country or globally.
         Defaults to 'all' in order to get global data. This can be overridden by the client.
@@ -634,7 +565,7 @@ class Client:
         return self._generate_history(historical_stats)
 
 
-    async def get_province_history(self, country, province, last_days='all'):
+    async def province_history(self, country, province, last_days='all'):
         """
         Get the historical data for a province within a country.
         """
@@ -646,7 +577,7 @@ class Client:
         return self._generate_history(data)
 
 
-    async def get_state_county_history(self, state, county, last_days='all'):
+    async def county_history(self, state, county, last_days='all'):
         """
         Get the historical data for a county within a US state.
         """
@@ -664,7 +595,7 @@ class Client:
         return self._generate_history(matching_county, True)
 
     
-    async def get_jhu_csse_data(self):
+    async def jhucsse(self):
         """
         Get data from the JHU CSSE.
         This includes province data for several countries
@@ -680,7 +611,7 @@ class Client:
         return statistics
 
 
-    async def get_jhu_county_data(self, state, county):
+    async def jhu_county(self, state, county):
         """
         Get the data for a specific county within a US state.
         """
@@ -697,7 +628,7 @@ class Client:
         return self._compile_jhu_data(matching_county)
 
     
-    async def get_jhu_all_counties(self):
+    async def jhu_all_counties(self):
         """
         Get the data for every single county in the US provided by JHU.
         """
@@ -713,7 +644,7 @@ class Client:
         return places
 
     
-    async def get_all_continents(self, **kwargs):
+    async def all_continents(self, **kwargs):
         """
         Get the statistics for world continents.
         """
@@ -758,7 +689,7 @@ class Client:
         return continents
 
 
-    async def get_single_continent(self, continent, **kwargs):
+    async def continent(self, continent, **kwargs):
         """
         Get the statistics for a single continent.
         """
@@ -788,7 +719,7 @@ class Client:
         return self._compile_continent(data)
 
 
-    async def get_nyt_usa_data(self):
+    async def nyt(self):
         """
         Get historical data for the US from the New York Times
         """
@@ -806,7 +737,7 @@ class Client:
                 date = datetime.strptime(date, "%Y-%m-%d")
 
             dates.append(
-                NewYorkTimesUsaStatistics(
+                NewYorkTimesUsa(
                     date,
                     cases,
                     deaths
@@ -816,7 +747,7 @@ class Client:
         return dates
 
 
-    async def get_nyt_all_states(self):
+    async def nyt_states(self):
         """
         Get the data for all states from New York Times
         """
@@ -828,7 +759,7 @@ class Client:
         return states_list
 
 
-    async def get_nyt_single_state(self, state):
+    async def nyt_state(self, state):
         """
         Get the data for a single state from New York Times
         """
@@ -840,7 +771,7 @@ class Client:
         return state_data
 
     
-    async def get_nyt_all_counties(self):
+    async def nyt_counties(self):
         """
         Get the data for all counties within all US states from NYT
         """
@@ -852,7 +783,7 @@ class Client:
         return county_list
 
 
-    async def get_nyt_single_county(self, county):
+    async def nyt_county(self, county):
         """
         Get the data for all counties within all US states from NYT
         """
@@ -901,13 +832,13 @@ class Client:
         for stats in data["data"]:
             statistics.append(self._compile_apple_stats(stats))
 
-        return AppleSubregionStatistics(
+        return AppleSubregion(
             subregion_string,
             statistics
         )
 
 
-    async def gov_supported_countries(self):
+    async def gov_countries(self):
         """
         Get a list of countries supported by Governmental data
         """
@@ -917,7 +848,7 @@ class Client:
         return data
 
 
-    async def gov_country(self, country, **kwargs):
+    async def gov(self, country, **kwargs):
         """
         Get the data from the Government of a specified country.
 

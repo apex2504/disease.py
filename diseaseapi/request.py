@@ -1,12 +1,12 @@
 import aiohttp
 from .exceptions import NotFound, APIError
 
-ver = '0.9.0'
+ver = '1.0.0'
 
 class RequestClient:
     def __init__(self):
         self.session = aiohttp.ClientSession(headers={
-            "User-Agent": "apex2504/python-corona-api v{}".format(ver)
+            "User-Agent": "apex2504/disease.py v{}".format(ver)
         })
 
     async def make_request(self, endpoint, params=None):
