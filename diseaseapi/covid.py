@@ -14,9 +14,10 @@ class Covid:
 
     
     def _check_sort(self, sort):
-        if sort not in ["cases", "deaths", "recovered", "active", "tests",
-                        "critical", "deathsPerOneMillion", "testsPerOneMillion",
-                        "todayCases", "todayDeaths", "casesPerOneMillion", "active"]:
+        if sort not in ['updated', 'country', 'countryInfo', 'cases', 'todayCases', 'deaths', 'todayDeaths', 'recovered',
+                        'todayRecovered', 'active', 'critical', 'casesPerOneMillion', 'deathsPerOneMillion', 'tests',
+                        'testsPerOneMillion', 'population', 'continent', 'oneCasePerPeople', 'oneDeathPerPeople',
+                        'oneTestPerPeople', 'activePerOneMillion', 'recoveredPerOneMillion', 'criticalPerOneMillion']:
             raise BadSortParameter('Invalid sort parameter.')
 
 

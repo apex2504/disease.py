@@ -20,7 +20,7 @@ def generate_base_embed(embed, data):
     embed.add_field(name="Total cases", value = diseaseapi.format_number(data.cases))
     embed.add_field(name="New cases today", value = diseaseapi.format_number(data.today.cases))
     embed.add_field(name="Total deaths", value = diseaseapi.format_number(data.deaths))
-    embed.add_field(name="New deaths today", value = diseaseapi.format_number(data.today_.eaths))
+    embed.add_field(name="New deaths today", value = diseaseapi.format_number(data.today.deaths))
     embed.add_field(name="Number of tests", value = diseaseapi.format_number(data.tests))
 
 def generate_all_embed(embed, data):

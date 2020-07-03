@@ -8,8 +8,8 @@ COUNTRY_DATA = ALL_COUNTRIES + '/{}'
 ALL_STATES = '{}' + _COVID_BASE + '/states'
 SINGLE_STATE = ALL_STATES + '/{}'
 
-HISTORICAL_COUNTRY = '{}' + _COVID_BASE + '/{}'
-HISTORICAL_PROVINCE = HISTORICAL_COUNTRY + '/{}'
+HISTORICAL_COUNTRY = '{}' + _COVID_BASE + '/historical/{}'
+HISTORICAL_PROVINCE = HISTORICAL_COUNTRY + '/historical/{}'
 STATE_COUNTY = '{}' + _COVID_BASE + '/historical/usacounties/{}'
 
 ALL_CONTINENTS = '{}' + _COVID_BASE + '/continents'
