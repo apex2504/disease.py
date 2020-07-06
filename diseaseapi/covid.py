@@ -796,7 +796,7 @@ class Covid:
         return county_data
 
 
-    async def apple_all_countries(self):
+    async def apple_countries(self):
         """
         Get the list of countries supported by Apple's mobility data set
         """

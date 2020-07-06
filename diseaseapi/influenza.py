@@ -65,7 +65,7 @@ class Influenza:
                     USCLTotal(
                         item["totalA"],
                         item["totalB"],
-                        item["tests"]
+                        item["totalTests"]
                     ),
                     USCLPercent(
                         item["percentPositiveA"],
@@ -108,7 +108,7 @@ class Influenza:
                     item["B"],
                     item["BVIC"],
                     item["BYAM"],
-                    item["totaltests"]
+                    item["totalTests"]
                 )
 
             )
