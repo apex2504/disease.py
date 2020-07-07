@@ -1,5 +1,5 @@
 # disease&#46;py
-An asynchronous wrapper for the [Open Disease API](https://github.com/disease-sh/API) written in Python.
+An asynchronous wrapper for the [Open Disease API](https://github.com/disease-sh/API) written in Python. Formerly `corona-api`.
 
 # Requirements
  - Python 3.5 or above
