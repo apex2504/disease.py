@@ -93,8 +93,9 @@ class Coronavirus(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-        self.diseaseapi = diseaseapi.Client()
-        self.corona = self.diseaseapi.covid19
+        if not hasattr(self.bot, 'corona'):
+            self.diseaseapi = diseaseapi.Client()
+            self.bot.covid = self.diseaseapi.covid19
 
     async def _jhucsse(self, country, province):
             
@@ -109,7 +110,7 @@ class Coronavirus(commands.Cog):
                 The name of the province we want data for.
         """
     
-        data = await self.corona.jhucsse() #get all data from the JHU CSSE
+        data = await self.bot.covid.jhucsse() #get all data from the JHU CSSE
 
         if country.lower() == 'uk':
             country = 'united kingdom' #corrections
@@ -146,18 +147,18 @@ class Coronavirus(commands.Cog):
         """
     
         if not country:
-            data = await self.corona.all(allow_none=True)
+            data = await self.bot.covid.all(allow_none=True)
 
         elif province:
             if (country.lower() == "us" or country.lower() == "usa"):
-                data = await self.corona.state(province, allow_none=True)
+                data = await self.bot.covid.state(province, allow_none=True)
                 
             else:
                 embed = await self._jhucsse(country, province)
                 return await ctx.send(embed=embed)
 
         else:
-            data = await self.corona.country(country, allow_none=True)
+            data = await self.bot.covid.country(country, allow_none=True)
 
         embed = discord.Embed(title="Coronavirus (COVID-19) stats", color=65280)
         embed.set_footer(text="These stats are what has been officially confirmed. It is possible that real figures are different.")
@@ -168,11 +169,11 @@ class Coronavirus(commands.Cog):
             generate_all_embed(embed, data)
 
         elif isinstance(data, diseaseapi.covidstatistics.Country):
-            yesterdays_data = await self.corona.country(country, yesterday=True, allow_none=True)
+            yesterdays_data = await self.bot.covid.country(country, yesterday=True, allow_none=True)
             generate_country_embed(embed, data, yesterdays_data)
 
         elif isinstance(data, diseaseapi.covidstatistics.State):
-            yesterdays_data = await self.corona.state(province, yesterday=True, allow_none=True)
+            yesterdays_data = await self.bot.covid.state(province, yesterday=True, allow_none=True)
             generate_state_embed(embed, data, yesterdays_data)
 
         await ctx.send(embed=embed)
@@ -198,34 +199,60 @@ class Coronavirus(commands.Cog):
             country = 'korea, south' #no stats for north korea
 
         if province:
-            data = await self.corona.province_history(country, province, 14) #get the history for the given country with province
+            if country.lower() == "usa" or country.lower() == "us":
+                return await self.state_historical(ctx, province)
+            data = await self.bot.covid.province_history(country, province, 15) #get the history for the given country with province
+            
         else:
-            data = await self.corona.country_history(country, 14) #if no province given, get the data for whole country
+            data = await self.bot.covid.country_history(country, 15) #if no province given, get the data for whole country
 
         name = data.name
-        prov = str(data.province).title()
+
+        if isinstance(data.province, list):
+            prov = "None"
+        else:
+            prov = str(data.province).title()
+
         embed = discord.Embed(title="Coronavirus history", description="**Country: {}**\n**Province: {}**".format(name, prov), color=65280)
         embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
+        
+        history = data.history
 
-        case_history_value = ''
-        death_history_value = ''
-        recovery_history_value = ''
+        for i in range(15):
+            embed.add_field(name="__**{}**__".format(history.cases[i].date.strftime("%d %b %Y")),
+            value="**Cases:** {}\n**Deaths:** {}\n**Recoveries:** {}".format(
+                diseaseapi.format_number(history.cases[i].value),
+                diseaseapi.format_number(history.cases[i].value), 
+                diseaseapi.format_number(history.cases[i].value)
+                )
+            )
 
-        for i in range(14): #get the previous 2 weeks
-            case_history_value = "{}\n**{}:** \
-                {}".format(case_history_value, data.history.cases[i].date,
-                diseaseapi.format_number(data.history.cases[i].value) if data.case_history[i].value is not None else 'Unknown')
-            death_history_value = "{}\n**{}:** \
-                {}".format(death_history_value, data.history.deaths[i].date,
-                diseaseapi.format_number(data.history.deaths[i].value) if data.history.deaths[i].value is not None else 'Unknown')
-            recovery_history_value = "{}\n**{}:** \
-                {}".format(recovery_history_value, data.history.recoveries[i].date,
-                diseaseapi.format_number(data.history.recoveries[i].value) if data.history.recoveries[i].value is not None else 'Unknown')
+        await ctx.send(embed=embed)
 
-        embed.add_field(name="Number of cases", value=case_history_value)
-        embed.add_field(name="Number of deaths", value=death_history_value)
-        embed.add_field(name="Number of recoveries",value=recovery_history_value)
 
+    async def state_historical(self, ctx, state):
+
+        """
+        Historical data from US states.
+
+        Params:
+            ctx:
+                Context.
+            state:
+                The state to get info for.
+        """
+
+        data = await self.bot.covid.nyt_state(state)
+        data = data[-15:]
+
+        embed = discord.Embed(title="Coronavirus history", description="**Country: USA**\n**State: {}**".format(state.title()), color=65280)
+
+        for time in data:
+            embed.add_field(name="__**{}**__".format(time.date.strftime("%d %b %Y")), value="**Cases:** {}\n**Deaths:** {}".format(
+                diseaseapi.format_number(time.cases), diseaseapi.format_number(time.deaths)
+            ))
+
+        embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
         await ctx.send(embed=embed)
 
 
@@ -244,9 +271,9 @@ class Coronavirus(commands.Cog):
                 Defaults to sort by the number of cases.
         """
 
-        data = await self.corona.all_countries(sort=sort)
+        data = await self.bot.covid.all_countries(sort=sort)
 
-        embed = discord.Embed(title="Top 15 cases", description="", color=65280)
+        embed = discord.Embed(title="COVID-19 leaderboard sorted by {}".format(sort), description="", color=65280)
         embed.set_footer(text='These stats are what has been officially confirmed. It is possible that real figures are different.')
 
         for i in range(1,16): #top 15

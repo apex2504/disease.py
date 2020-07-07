@@ -472,4 +472,4 @@ asyncio.get_event_loop().run_until_complete(get_country_gov())
 ```
 
 # Note
-Due to the fact that each country's governmental/official statistics website is different, it is not feasible to create a standardised class for the data. However, if you interpret the data received from the API, it should be relatively simple to work with the given information.
+Due to the fact that each country's governmental/official statistics website is different (layouts, tables etc.), it is not feasible to create a standardised class for the data. However, the data resurned will be in standard JSON format so it should be relatively simple to work with.

@@ -12,7 +12,7 @@ class Covid:
         self.api_url = api_url
         self.request_client = request_client
 
-    
+
     def _check_sort(self, sort):
         if sort not in ['updated', 'country', 'countryInfo', 'cases', 'todayCases', 'deaths', 'todayDeaths', 'recovered',
                         'todayRecovered', 'active', 'critical', 'casesPerOneMillion', 'deathsPerOneMillion', 'tests',
@@ -25,6 +25,7 @@ class Covid:
         if not isinstance(value, bool):
             raise BadYesterdayParameter('Value for yesterday should either be True or False.')
 
+
     def _check_two_days_ago(self, value):
         if not isinstance(value, bool):
             raise BadTwoDaysAgoParameter('Value for two_days_ago should either be True or False.')
@@ -34,7 +35,7 @@ class Covid:
         if not isinstance(value, bool):
             raise BadAllowNoneParameter('Value for allow_none should either be True or False.')
 
-    
+
     def _compile_today(self, data):
         return Today(
             data.get('todayCases'),
@@ -42,7 +43,7 @@ class Covid:
             data.get('todayRecovered')
         )
 
-    
+
     def _compile_permillion(self, data):
         return PerMillion(
             data.get('casesPerOneMillion'),
@@ -96,7 +97,7 @@ class Covid:
 
         return info
 
-    
+
     def _compile_country_data(self, country_stats):
         country_name = country_stats.get("country")
         total_country_cases = country_stats.get("cases", 0)
@@ -116,7 +117,7 @@ class Covid:
         countryInfo = country_stats["countryInfo"]
 
         info = self._compile_countryInfo(countryInfo)
-        
+
         return Country(
             info,
             country_name,
@@ -156,7 +157,7 @@ class Covid:
 
         return state_stats
 
-    
+
     def _generate_history(self, historical_stats, is_county=False):
         case_history = []
         death_history = []
@@ -165,15 +166,15 @@ class Covid:
         if not is_county:        
             country_name = historical_stats.get("country", "Global")
             province_name = historical_stats.get("province")
-            
+
 
         else:
             country_name = historical_stats.get("province")
             province_name = historical_stats.get("county")
-        
+
         if "timeline" not in historical_stats: #if country was 'all'
             d = historical_stats
-        
+
         else:
             d = historical_stats["timeline"]
 
@@ -196,7 +197,7 @@ class Covid:
             his
         )
 
-    
+
     def _compile_jhu_data(self, matching_county):
         country = matching_county.get("country") #will always be 'US'
         province = matching_county.get("province")
@@ -256,25 +257,13 @@ class Covid:
 
 
     def _compile_state_list(self, data):
-        dates = []
-
-        for d in data:
-            state = self._compile_nyt_state(d)
-            dates.append(state)
-        
-        return dates
+        return [self._compile_nyt_state(d) for d in data]
 
 
     def _compile_county_list(self, data):
-        dates = []
+        return [self._compile_nyt_county(d) for d in data]
+    
 
-        for d in data:
-            county = self._compile_nyt_county(d)
-            dates.append(county)
-        
-        return dates
-    
-    
     def _compile_nyt_state(self, data):
         date = data.get('date')
         state = data.get('state')
@@ -334,8 +323,8 @@ class Covid:
             transit,
             walking
         )
-    
-    
+
+
     async def all(self, **kwargs):
         """
         Get the global stats for Coronavirus COVID-19
@@ -348,16 +337,16 @@ class Covid:
 
         if yesterday:
             self._check_yesterday(yesterday)
-        
+
         if two_days_ago:
             self._check_two_days_ago(two_days_ago)
 
         if yesterday and two_days_ago:
             raise ValueError('yesterday and two_days_ago cannot both be True.')
-        
+
         if allow_none:
             self._check_allow_none(allow_none)
-        
+
         yesterday = str(yesterday).lower()
         two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
@@ -394,7 +383,7 @@ class Covid:
             updated,
             )
 
-    
+
     async def country(self, *countries, **kwargs):
         """
         Get the data for more than one country, but not necessarily all of them.
@@ -417,25 +406,20 @@ class Covid:
 
         if allow_none:
             self._check_allow_none(allow_none)
-        
+
         yesterday = str(yesterday).lower()
         two_days_ago = str(two_days_ago).lower()
         allow_none = str(allow_none).lower()
         params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
-            
+
         data = await self.request_client.make_request(endpoint, params)
 
         if isinstance(data, dict):
             return self._compile_country_data(data)
-        
-        returned_countries = []
 
-        for country in data:
-            returned_countries.append(
-                self._compile_country_data(country)
-            )
-        return returned_countries
-    
+        return [self._compile_country_data(country) for country in data]
+
+
     async def all_countries(self, **kwargs):
         """
         Get the data for every infected country.
@@ -467,20 +451,15 @@ class Covid:
         if sort:
             self._check_sort(sort)
             params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none, "sort": sort}
-        
+
         else:
             params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none}
-            
+ 
         all_countries = await self.request_client.make_request(endpoint, params)
 
-        list_of_countries = []
+        return [self._compile_country_data(c) for c in all_countries]
 
-        for c in all_countries:
-            list_of_countries.append(self._compile_country_data(c))
 
-        return list_of_countries
-    
-    
     async def all_states(self, **kwargs):
         """
         Get the stats for all US states
@@ -510,13 +489,7 @@ class Covid:
 
         state_info = await self.request_client.make_request(endpoint, params)
 
-        state_data = []
-
-        for state in state_info:
-            state_stats = self._compile_state(state)
-            state_data.append(state_stats)
-
-        return state_data
+        return [self._compile_state(state) for state in state_info]
 
     
     async def state(self, *states, **kwargs):
@@ -544,13 +517,7 @@ class Covid:
         if isinstance(data, dict):
             return self._compile_state(data)
         
-        returned_states = []
-
-        for state in data:
-            returned_states.append(
-                self._compile_state(state)
-            )
-        return returned_states
+        return [self._compile_state(state) for state in data]
 
 
     async def country_history(self, country='all', last_days='all'):
@@ -586,30 +553,26 @@ class Covid:
         params = {"lastdays": last_days}
 
         data = await self.request_client.make_request(endpoint, params)
-        
+
         try:
-            matching_county = next(place for place in data if place["province"].lower() == state.lower() \
+            matching_county = next(place for place in data if place["province"].lower() == state.lower()
             and place["county"].lower() == county.lower())
         except StopIteration:
             raise NotFound('Nothing found for specified county.')
 
         return self._generate_history(matching_county, True)
 
-    
+
     async def jhucsse(self):
         """
         Get data from the JHU CSSE.
         This includes province data for several countries
         """
         endpoint = JHU_CSSE.format(self.api_url)
+
         data = await self.request_client.make_request(endpoint)
 
-        statistics = []
-
-        for cp in data:
-            statistics.append(self._compile_jhu_data(cp))
-
-        return statistics
+        return [self._compile_jhu_data(cp) for cp in data]
 
 
     async def jhu_county(self, state, county):
@@ -621,14 +584,14 @@ class Covid:
         all_matching_counties = await self.request_client.make_request(endpoint)
 
         try:
-            matching_county = next(place for place in all_matching_counties if place["province"].lower() == state.lower() \
+            matching_county = next(place for place in all_matching_counties if place["province"].lower() == state.lower()
             and place["county"].lower() == county.lower())
         except StopIteration:
             raise NotFound('Nothing found for specified county.')
 
         return self._compile_jhu_data(matching_county)
 
-    
+
     async def jhu_all_counties(self):
         """
         Get the data for every single county in the US provided by JHU.
@@ -637,14 +600,9 @@ class Covid:
 
         data = await self.request_client.make_request(endpoint)
 
-        places = []
+        return [self._compile_jhu_data(place) for place in data]
 
-        for place in data:
-            places.append(self._compile_jhu_data(place))
 
-        return places
-
-    
     async def all_continents(self, **kwargs):
         """
         Get the statistics for world continents.
@@ -676,18 +634,13 @@ class Covid:
         if sort:
             self._check_sort(sort)
             params = {"yesterday": yesterday, "twoDaysAgo": two_days_ago, "allowNull": allow_none, "sort": sort}
-        
+
         else:
             params = {"yesterday": yesterday,"twoDaysAgo": two_days_ago, "allowNull": allow_none}
 
         data = await self.request_client.make_request(endpoint, params)
 
-        continents = []
-
-        for c in data:
-            continents.append(self._compile_continent(c))
-
-        return continents
+        return [self._compile_continent(c) for c in data]
 
 
     async def continent(self, continent, **kwargs):
@@ -771,7 +724,7 @@ class Covid:
 
         return state_data
 
-    
+
     async def nyt_counties(self):
         """
         Get the data for all counties within all US states from NYT
@@ -818,7 +771,7 @@ class Covid:
             data.get("subregions")
         )
 
-    
+
     async def apple_mobility_data(self, country, subregion):
         """
         Get the statistics for the specified subregion
@@ -828,10 +781,7 @@ class Covid:
 
         subregion_string = data.get("subregion")
 
-        statistics = []
-
-        for stats in data["data"]:
-            statistics.append(self._compile_apple_stats(stats))
+        statistics = [self._compile_apple_stats(stats) for stats in data["data"]]
 
         return AppleSubregion(
             subregion_string,
@@ -862,7 +812,7 @@ class Covid:
 
         if allow_none:
             self._check_allow_none(allow_none)
-        
+
         allow_none = str(allow_none).lower()
         params = {"allowNull": allow_none}
 
