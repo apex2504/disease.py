@@ -714,16 +714,14 @@ class Covid:
         return states_list
 
 
-    async def nyt_state(self, state) -> NewYorkTimesState:
+    async def nyt_state(self, state) -> List[NewYorkTimesState]:
         """
         Get the data for a single state from New York Times
         """
         endpoint = NYT_SINGLE_STATE.format(self.api_url, state)
         data = await self.request_client.make_request(endpoint)
 
-        state_data = self._compile_nyt_state(data)
-
-        return state_data
+        return [self._compile_nyt_state(d) for d in data]
 
 
     async def nyt_counties(self) -> List[NewYorkTimesCounty]:
