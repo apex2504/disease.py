@@ -19,7 +19,7 @@ Get support for this on Discord, either on our [official server](https://takagis
 import diseaseapi
 import asyncio
 
-client = diseaseapi.Client().covid19
+client = diseaseapi.Client()
 covid = client.covid19
 # for influenza, use: influenza = client.influenza
 
