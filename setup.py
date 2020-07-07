@@ -1,21 +1,21 @@
 from setuptools import setup
 
-ver = '0.9.0.post1'
+ver = '1.0.0'
 
 with open('README.md', 'r') as f:
   long_desc = f.read()
 
 setup(
-  name = 'corona_api',
-  packages = ['corona_api'],
+  name = 'disease.py',
+  packages = ['diseaseapi'],
   version = ver,
   license='MIT',
-  description = 'An asynchronous wrapper for the corona.lmao.ninja API written in Python.',
+  description = 'An asynchronous wrapper for the Open Disease API written in Python.',
   long_description= long_desc,
   long_description_content_type = 'text/markdown',
   author = 'Rob Wainwright',
   author_email = 'wainwrightbobby@gmail.com',
-  url = 'https://github.com/apex2504/python-corona-api',
+  url = 'https://github.com/apex2504/disease.sh',
   keywords = ['coronavirus', 'covid-19'],
   install_requires=[
           'aiohttp',
