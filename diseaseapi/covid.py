@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Union, List, Dict
 from .covidstatistics import *
 from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter, BadTwoDaysAgoParameter, BadAllowNoneParameter
 from .covidendpoints import *
@@ -325,7 +326,7 @@ class Covid:
         )
 
 
-    async def all(self, **kwargs):
+    async def all(self, **kwargs) -> Global:
         """
         Get the global stats for Coronavirus COVID-19
         """
@@ -384,7 +385,7 @@ class Covid:
             )
 
 
-    async def country(self, *countries, **kwargs):
+    async def country(self, *countries, **kwargs) -> Union[Country, List[Country]]:
         """
         Get the data for more than one country, but not necessarily all of them.
         """
@@ -420,9 +421,9 @@ class Covid:
         return [self._compile_country_data(country) for country in data]
 
 
-    async def all_countries(self, **kwargs):
+    async def all_countries(self, **kwargs) -> List[Country]:
         """
-        Get the data for every infected country.
+        Get the data for every affected country.
         """
         yesterday = kwargs.get('yesterday', False)
         two_days_ago = kwargs.get('two_days_ago', False)
@@ -460,7 +461,7 @@ class Covid:
         return [self._compile_country_data(c) for c in all_countries]
 
 
-    async def all_states(self, **kwargs):
+    async def all_states(self, **kwargs) -> List[State]:
         """
         Get the stats for all US states
         """
@@ -492,7 +493,7 @@ class Covid:
         return [self._compile_state(state) for state in state_info]
 
     
-    async def state(self, *states, **kwargs):
+    async def state(self, *states, **kwargs) -> Union[State, List[State]]:
         """
         Get the stats for US States
         """
@@ -520,7 +521,7 @@ class Covid:
         return [self._compile_state(state) for state in data]
 
 
-    async def country_history(self, country='all', last_days='all'):
+    async def country_history(self, country='all', last_days='all') -> Historical:
         """
         Get historical data for a specific country or globally.
         Defaults to 'all' in order to get global data. This can be overridden by the client.
@@ -533,7 +534,7 @@ class Covid:
         return self._generate_history(historical_stats)
 
 
-    async def province_history(self, country, province, last_days='all'):
+    async def province_history(self, country, province, last_days='all') -> Historical:
         """
         Get the historical data for a province within a country.
         """
@@ -545,7 +546,7 @@ class Covid:
         return self._generate_history(data)
 
 
-    async def county_history(self, state, county, last_days='all'):
+    async def county_history(self, state, county, last_days='all') -> Historical:
         """
         Get the historical data for a county within a US state.
         """
@@ -563,7 +564,7 @@ class Covid:
         return self._generate_history(matching_county, True)
 
 
-    async def jhucsse(self):
+    async def jhucsse(self) -> List[JhuCsse]:
         """
         Get data from the JHU CSSE.
         This includes province data for several countries
@@ -575,7 +576,7 @@ class Covid:
         return [self._compile_jhu_data(cp) for cp in data]
 
 
-    async def jhu_county(self, state, county):
+    async def jhu_county(self, state, county) -> JhuCsse:
         """
         Get the data for a specific county within a US state.
         """
@@ -592,7 +593,7 @@ class Covid:
         return self._compile_jhu_data(matching_county)
 
 
-    async def jhu_all_counties(self):
+    async def jhu_all_counties(self) -> List[JhuCsse]:
         """
         Get the data for every single county in the US provided by JHU.
         """
@@ -603,7 +604,7 @@ class Covid:
         return [self._compile_jhu_data(place) for place in data]
 
 
-    async def all_continents(self, **kwargs):
+    async def all_continents(self, **kwargs) -> List[Continent]:
         """
         Get the statistics for world continents.
         """
@@ -643,7 +644,7 @@ class Covid:
         return [self._compile_continent(c) for c in data]
 
 
-    async def continent(self, continent, **kwargs):
+    async def continent(self, continent, **kwargs) -> Continent:
         """
         Get the statistics for a single continent.
         """
@@ -673,7 +674,7 @@ class Covid:
         return self._compile_continent(data)
 
 
-    async def nyt(self):
+    async def nyt(self) -> NewYorkTimesUsa:
         """
         Get historical data for the US from the New York Times
         """
@@ -701,7 +702,7 @@ class Covid:
         return dates
 
 
-    async def nyt_states(self):
+    async def nyt_states(self) -> List[NewYorkTimesState]:
         """
         Get the data for all states from New York Times
         """
@@ -713,19 +714,19 @@ class Covid:
         return states_list
 
 
-    async def nyt_state(self, state):
+    async def nyt_state(self, state) -> NewYorkTimesState:
         """
         Get the data for a single state from New York Times
         """
         endpoint = NYT_SINGLE_STATE.format(self.api_url, state)
         data = await self.request_client.make_request(endpoint)
 
-        state_data = self._compile_state_list(data)
+        state_data = self._compile_nyt_state(data)
 
         return state_data
 
 
-    async def nyt_counties(self):
+    async def nyt_counties(self) -> List[NewYorkTimesCounty]:
         """
         Get the data for all counties within all US states from NYT
         """
@@ -737,19 +738,19 @@ class Covid:
         return county_list
 
 
-    async def nyt_county(self, county):
+    async def nyt_county(self, county) -> NewYorkTimesCounty:
         """
         Get the data for all counties within all US states from NYT
         """
         endpoint = NYT_SINGLE_COUNTY.format(self.api_url, county)
         data = await self.request_client.make_request(endpoint)
 
-        county_data = self._compile_county_list(data)
+        county_data = self._compile_nyt_county(data)
 
         return county_data
 
 
-    async def apple_countries(self):
+    async def apple_countries(self) -> List[str]:
         """
         Get the list of countries supported by Apple's mobility data set
         """
@@ -759,7 +760,7 @@ class Covid:
         return data
 
 
-    async def apple_subregions(self, country):
+    async def apple_subregions(self, country) -> AppleSubregions:
         """
         Get the list of supported subregions for a country within Apple's mobility data set
         """
@@ -772,7 +773,7 @@ class Covid:
         )
 
 
-    async def apple_mobility_data(self, country, subregion):
+    async def apple_mobility_data(self, country, subregion) -> AppleSubregion:
         """
         Get the statistics for the specified subregion
         """
@@ -789,7 +790,7 @@ class Covid:
         )
 
 
-    async def gov_countries(self):
+    async def gov_countries(self) -> List[str]:
         """
         Get a list of countries supported by Governmental data
         """
@@ -799,7 +800,7 @@ class Covid:
         return data
 
 
-    async def gov(self, country, **kwargs):
+    async def gov(self, country, **kwargs) -> Dict:
         """
         Get the data from the Government of a specified country.
 

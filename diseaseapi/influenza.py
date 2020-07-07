@@ -9,7 +9,7 @@ class Influenza:
         self.request_client = request_client
 
 
-    async def ilinet(self):
+    async def ilinet(self) -> ILINet:
         """
         Get Influenza-like-illness data for the 2019 and 2020 outbreaks from the US Center for Disease Control
         """
@@ -46,7 +46,7 @@ class Influenza:
         )
 
 
-    async def uscl(self):
+    async def uscl(self) -> USCL:
         """
         Get Influenza report data for the 2019 and 2020 outbreaks from the US Center for Disease Control, reported by US clinical labs
         """
@@ -82,7 +82,7 @@ class Influenza:
         )
 
 
-    async def usphl(self):
+    async def usphl(self) -> USPHL:
         """
         Get Influenza report data for the 2019 and 2020 outbreaks from the US Center for Disease Control, reported by US public health labs
         """

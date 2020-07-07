@@ -129,7 +129,7 @@ client = diseaseapi.Client().covid19
 async def get_states():
     data = await client.state('Ohio', 'California', 'Texas') #get data for specified states
     #to get data for every state supported, use:  all_states()
-    print(data) #prints a list of StateStatistics
+    print(data) #prints a list of State
 
     await client.request_client.close() #close the ClientSession
 
