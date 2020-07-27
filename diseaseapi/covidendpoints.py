@@ -31,3 +31,5 @@ APPLE_SINGLE_SUBREGION = APPLE_SUBREGIONS + '/{}'
 
 GOV_ALL = '{}' + _COVID_BASE + '/gov'
 GOV_COUNTRY = GOV_ALL + '/{}'
+
+VACCINE = '{}' + _COVID_BASE + '/vaccine'

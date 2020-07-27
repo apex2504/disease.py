@@ -188,3 +188,19 @@ class Mobility:
         self.driving = driving
         self.transit = transit
         self.walking = walking
+
+
+class Vaccine:
+    def __init__(self, candidate, sponsors, details, phase, institutions, funding):
+        self.candidate = candidate
+        self.sponsors = sponsors
+        self.details = details
+        self.phase = phase
+        self.institutions = institutions
+        self.funding = funding
+
+
+class Vaccines:
+    def __init__(self, source, vaccines):
+        self.source = source
+        self.vaccines = vaccines

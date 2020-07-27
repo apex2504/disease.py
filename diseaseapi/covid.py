@@ -325,6 +325,26 @@ class Covid:
             walking
         )
 
+    
+    def _compile_vaccine(self, data):
+        return Vaccine(
+            data.get("candidate"),
+            data.get("sponsors"),
+            data.get("details"),
+            data.get("trialPhase"),
+            data.get("institutions"),
+            data.get("funding")
+        )
+
+    
+    def _compile_vaccines(self, data):
+        source = data.get("source")
+
+        return Vaccines(
+            source,
+            [self._compile_vaccine(vacc) for vacc in data["data"]]
+        )
+
 
     async def all(self, **kwargs) -> Global:
         """
@@ -819,3 +839,14 @@ class Covid:
         data = await self.request_client.make_request(endpoint, params)
 
         return data
+
+
+    async def vaccine(self) -> Vaccines:
+        """
+        Get the data about vaccine trials for Covid.
+        Data sourced from https://www.raps.org/news-and-articles/news-articles/2020/3/covid-19-vaccine-tracker
+        """
+        endpoint = VACCINE.format(self.api_url)
+        data = await self.request_client.make_request(endpoint)
+
+        return self._compile_vaccines(data)
