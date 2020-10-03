@@ -44,7 +44,7 @@ asyncio.get_event_loop().run_until_complete(main())
 | `yesterday`    	| - `all()`<br>- `country()`<br>- `all_countries()`<br>- `all_states()`<br>- `state()`<br>- `all_continents()`<br>- `continent()`                      	| - `True`<br>- `False`                                                                                                                                                                                                                         	|
 | `two_days_ago` 	| - `all()`<br>- `country()`<br>- `all_countries()`<br>- `continent()`<br>- `all_continents()`                                                                                                	| - `True`<br>- `False`                                                                                                                                                                                                                         	|
 | `sort`         	| - `all_countries()`<br>- `all_states()`<br>- `all_continents()`                                                                                                                                                                       	|Depends on the endpoint used. Consult the API documentation to see which endpoints support which parameters.   	|
-| `allow_none`   	| - `all()`<br>- `country_data()`<br>- `all_countries()`<br>- `all_continents()`<br>- `continent()`<br>- `state()`<br>- `all_states()`<br>- `gov()` 	| - `True`<br>- `False`                                                                                                                                                                                                                         	|
+| `allow_none`   	| - `all()`<br>- `country()`<br>- `all_countries()`<br>- `all_continents()`<br>- `continent()`<br>- `state()`<br>- `all_states()`<br>- `gov()` 	| - `True`<br>- `False`                                                                                                                                                                                                                         	|
 
 # Examples
 The following examples cover the basic usage of the library and its various features. 
@@ -78,7 +78,7 @@ import asyncio
 client = diseaseapi.Client().covid19
 
 async def get_country():
-    data = await client.country_data('UK') #get data for the UK today,
+    data = await client.country('UK') #get data for the UK today,
     print(data.cases, data.deaths) #print the number of cases and deaths for the UK
 
     await client.request_client.close() #close the ClientSession
