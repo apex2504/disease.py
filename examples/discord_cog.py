@@ -93,7 +93,7 @@ class Coronavirus(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
-        if not hasattr(self.bot, 'corona'):
+        if not hasattr(self.bot, 'covid'): #prevent the client being overwritten during cog reloads
             self.diseaseapi = diseaseapi.Client()
             self.bot.covid = self.diseaseapi.covid19
 
