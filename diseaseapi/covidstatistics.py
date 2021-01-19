@@ -204,3 +204,15 @@ class Vaccines:
     def __init__(self, source, vaccines):
         self.source = source
         self.vaccines = vaccines
+
+
+class VaccineTimeline:
+    def __init__(self, date, value):
+        self.date = date
+        self.value = value
+
+
+class VaccineCountry:
+    def __init__(self, country, timeline):
+        self.country = country
+        self.timeline = timeline

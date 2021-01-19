@@ -1,6 +1,6 @@
 from setuptools import setup
 
-ver = '1.1.0'
+ver = '1.2.0'
 
 with open('README.md', 'r') as f:
   long_desc = f.read()
@@ -14,7 +14,7 @@ setup(
   long_description= long_desc,
   long_description_content_type = 'text/markdown',
   author = 'Rob Wainwright',
-  author_email = 'wainwrightbobby@gmail.com',
+  author_email = 'apex@taka.moe',
   url = 'https://github.com/apex2504/disease.py',
   keywords = ['coronavirus', 'covid-19'],
   install_requires=[

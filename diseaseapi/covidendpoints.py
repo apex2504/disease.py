@@ -33,3 +33,6 @@ GOV_ALL = '{}' + _COVID_BASE + '/gov'
 GOV_COUNTRY = GOV_ALL + '/{}'
 
 VACCINE = '{}' + _COVID_BASE + '/vaccine'
+COVERAGE_ALL = VACCINE + '/coverage'
+COVERAGE_COUNTRIES = COVERAGE_ALL + '/countries'
+COVERAGE_COUNTRY = COVERAGE_COUNTRIES + '/{}'

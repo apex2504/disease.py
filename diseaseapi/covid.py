@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Tuple
 from .covidstatistics import *
 from .exceptions import NotFound, BadSortParameter, BadYesterdayParameter, BadTwoDaysAgoParameter, BadAllowNoneParameter
 from .covidendpoints import *
@@ -344,6 +344,17 @@ class Covid:
             source,
             [self._compile_vaccine(vacc) for vacc in data["data"]]
         )
+
+
+    def _compile_vax_tl(self, data):
+        return [VaccineTimeline(datetime.strptime(date, '%m/%d/%y'), data[date]) for date in data]
+
+
+    def _compile_vax_country(self, data):
+        return VaccineCountry(data['country'], self._compile_vax_tl(data['timeline']))
+
+
+######################################################################################
 
 
     async def all(self, **kwargs) -> Global:
@@ -850,3 +861,40 @@ class Covid:
         data = await self.request_client.make_request(endpoint)
 
         return self._compile_vaccines(data)
+
+
+    async def vaccine_coverage(self, last_days='all') -> List[VaccineTimeline]:
+        """
+        Get global vaccine coverage data.
+        """
+        endpoint = COVERAGE_ALL.format(self.api_url)
+        params = {'lastdays': last_days}
+        data = await self.request_client.make_request(endpoint, params=params)
+
+        return self._compile_vax_tl(data)
+
+
+    async def vaccine_countries(self, last_days='all') -> List[VaccineCountry]:
+        """
+        Get vaccination data for all countries.
+        """
+        endpoint = COVERAGE_COUNTRIES.format(self.api_url)
+        params = {'lastdays': last_days}
+        data = await self.request_client.client.make_request(endpoint, params=params)
+
+        return [self._compile_vax_country(country) for country in data]
+
+
+    async def vaccine_country(self, country, last_days='all') -> VaccineCountry:
+        """
+        Get vaccination data for a specific country.
+        """
+        endpoint = COVERAGE_COUNTRY.format(self.api_url, country)
+        params = {'lastdays': last_days}
+        data = self.request_client.make_request(endpoint, params=params)
+
+        return self._compile_vax_country(data)
+
+
+    async def therapeutics(self):
+        raise NotImplementedError

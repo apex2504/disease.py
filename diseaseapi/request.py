@@ -1,7 +1,7 @@
 import aiohttp
 from .exceptions import NotFound, APIError
 
-ver = '1.0.2'
+ver = '1.2.0'
 
 class RequestClient:
     def __init__(self):
@@ -15,9 +15,9 @@ class RequestClient:
                 raise NotFound('No data available for specified country, state or province.')
             elif resp.status != 200:
                 raise APIError('An unexpected error occurred.')
-            
+
             return await resp.json()
 
-    
+
     async def close(self):
         await self.session.close()

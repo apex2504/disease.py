@@ -471,5 +471,59 @@ async def get_country_gov():
 asyncio.get_event_loop().run_until_complete(get_country_gov())
 ```
 
+### Get the vaccine data globally
+```python
+import diseaseapi
+import asyncio
+
+client = diseaseapi.Client().covid19
+
+async def vax_cov():
+    data = await client.vaccine_coverage(30)
+
+    print(data[0].date.day, data[0].value) #global vaccine data 30 days ago
+
+    await client.request_client.close() #close the ClientSession
+
+asyncio.get_event_loop().run_until_complete(vax_cov())
+```
+
+### Get the vaccine data for all countries
+```python
+import diseaseapi
+import asyncio
+
+client = diseaseapi.Client().covid19
+
+async def vax_all():
+    data = await client.vaccine_countries(30)
+
+    d = data[0]
+
+    print(d.country, d.timeline[0].date, d.timeline[0].value)
+
+    await client.request_client.close() #close the ClientSession
+
+asyncio.get_event_loop().run_until_complete(vax_all())
+```
+
+### Get the vaccine data for a specific country
+```python
+import diseaseapi
+import asyncio
+
+client = diseaseapi.Client().covid19
+
+async def vax_ctry():
+    data = await client.vaccine_country('UK', 30)
+
+    print(d.country, d.timeline[0].date, d.timeline[0].value)
+
+    await client.request_client.close() #close the ClientSession
+
+asyncio.get_event_loop().run_until_complete(vac_ctry())
+```
+
+
 # Note
-Due to the fact that each country's governmental/official statistics website is different (layouts, tables etc.), it is not feasible to create a standardised class for the data. However, the data resurned will be in standard JSON format so it should be relatively simple to work with.
+Due to the fact that each country's governmental/official statistics website is different (layouts, tables etc.), it is not feasible to create a standardised class for the data. However, the data returned will be in standard JSON format so it should be relatively simple to work with.
