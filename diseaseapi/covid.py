@@ -880,7 +880,7 @@ class Covid:
         """
         endpoint = COVERAGE_COUNTRIES.format(self.api_url)
         params = {'lastdays': last_days}
-        data = await self.request_client.client.make_request(endpoint, params=params)
+        data = await self.request_client.make_request(endpoint, params=params)
 
         return [self._compile_vax_country(country) for country in data]
 
@@ -891,7 +891,7 @@ class Covid:
         """
         endpoint = COVERAGE_COUNTRY.format(self.api_url, country)
         params = {'lastdays': last_days}
-        data = self.request_client.make_request(endpoint, params=params)
+        data = await self.request_client.make_request(endpoint, params=params)
 
         return self._compile_vax_country(data)
 
